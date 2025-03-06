@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import Modal from "./Modal";
 import Authentication from "./Authentication";
@@ -11,7 +11,7 @@ export default function Comments() {
 
   const [showModal, setShowModal] = useState(false);
   const [comments, setComments] = useState([]);
-  const [comment, setComment] = useState("");
+  const comment = useRef(null);
 
   useEffect(() => {
 
@@ -53,14 +53,13 @@ export default function Comments() {
     }
 
     const commentInfo = {
-      content: comment,
+      content: comment.current.value,
       userId: globalUser.uid,
       reply: false,
       replies: []
     }
 
-    setComment("");
-
+    comment.current.value = "";
     await addComment(commentInfo);
   }
 
@@ -85,8 +84,8 @@ export default function Comments() {
             <input
               name="comment"
               type="text"
-              value={comment}
-              onChange={(event) => setComment(event.target.value)}
+              ref={comment}
+              onChange={(event) => (comment.current.value = event.target.value)}
             />
 
             <button type="submit">
