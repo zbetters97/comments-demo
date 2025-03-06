@@ -4,28 +4,36 @@ import { useAuthContext } from "../context/AuthContext";
 export default function Comment(props) {
 
   const { comment, comments } = props;
-  const { globalUser, likeComment, dislikeComment, addComment } = useAuthContext();
+  const { globalUser, likeComment, dislikeComment, addComment, removeComment } = useAuthContext();
 
   const [replyingTo, setReplyingTo] = useState([]);
   const [replies, setReplies] = useState({});
+
+  function resetReplyState(commentId) {
+
+    // RESET useState COMMENT REPLY
+    const { [commentId]: removedKey, ...current } = replies;
+    setReplies(current);
+
+    // REMOVE REPLY MATCHING SAME ID
+    setReplyingTo([...replyingTo.filter(c => c !== commentId)]);
+  }
 
   function replyToComment(commentId) {
 
     // CANCEL REPLY
     if (replyingTo.includes(commentId)) {
-
-      // RESET useState COMMENT REPLY
-      const { [commentId]: removedKey, ...current } = replies;
-      setReplies(current);
-
-      setReplyingTo([...replyingTo.filter(c => c !== commentId)]);
+      resetReplyState(commentId);
     }
+    // POST REPLY
     else {
       setReplyingTo([...replyingTo, commentId]);
     }
   }
 
-  async function submitReply(commentId) {
+  async function submitReply(event, commentId) {
+
+    event.preventDefault();
 
     if (!replies[commentId] || !globalUser) {
       return;
@@ -39,15 +47,21 @@ export default function Comment(props) {
     }
 
     await addComment(replyInfo, commentId);
-
-    // RESET useState COMMENT REPLY
-    const { [commentId]: removedKey, ...current } = replies;
-    setReplies(current);
-
-    setReplyingTo([...replyingTo.filter(c => c !== commentId)]);
+    resetReplyState(commentId);
   }
 
-  const renderReplies = (replies) => {
+
+
+  async function deleteComment(commentId) {
+
+    if (!commentId) {
+      return;
+    }
+
+    await removeComment(commentId);
+  }
+
+  function renderReplies(replies) {
     if (!replies || replies.length === 0) {
       return null;
     }
@@ -72,7 +86,7 @@ export default function Comment(props) {
 
   return (
     <div>
-      <p>{comment.firstName} {comment.lastName.charAt(0)}. - {comment.date}</p>
+      <p>{comment.firstName} {comment.lastName.charAt(0)} &#183; {comment.date}</p>
       <p>"{comment.content}"</p>
 
       <button onClick={() => likeComment(comment.id)}>
@@ -84,6 +98,12 @@ export default function Comment(props) {
         {comment.numDislikes}
       </button>
 
+      {globalUser && globalUser.uid === comment.userId && (
+        <button onClick={() => deleteComment(comment.id)}>
+          Delete
+        </button>
+      )}
+
       {globalUser && (
 
         <div>
@@ -93,7 +113,7 @@ export default function Comment(props) {
 
           {replyingTo.includes(comment.id) &&
 
-            <div>
+            <form onSubmit={(event) => submitReply(event, comment.id)}>
               <label htmlFor="reply">Reply</label>
               <input
                 name="reply"
@@ -106,18 +126,19 @@ export default function Comment(props) {
                   }));
                 }}
               />
-              <button onClick={() => submitReply(comment.id)}>
+              <button type="submit">
                 Submit
               </button>
               <button onClick={() => replyToComment(comment.id)}>
                 Cancel
               </button>
-            </div>
+            </form>
           }
         </div>
-      )}
+      )
+      }
 
       {renderReplies(comment.replies)}
-    </div>
+    </div >
   );
 }

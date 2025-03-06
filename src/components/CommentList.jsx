@@ -1,25 +1,20 @@
-import { useEffect, useState } from "react";
 import Comment from "./Comment";
 
 export default function CommentList(props) {
 
   const { comments } = props;
-  const [topLevelComments, setTopLevelComments] = useState([]);
-
-  /* useEffect(() => {
-     const filteredList = comments.filter((comment) => !comment.reply);
-     setTopLevelComments(filteredList);
-   }, [comments]);*/
 
   return (
-    <>
+    <div>
+      {/* ONLY SHOW NON-REPLY COMMENTS */}
+      {/* LOOP THROUGH EACH COMMENT AND CREATE Comment COMPONENT*/}
       {comments.filter((comment) => !comment.reply).map((comment) => (
         <ul key={comment.id}>
           <li>
-            <Comment key={comment.id} comment={comment} comments={comments} />
+            <Comment comment={comment} comments={comments} />
           </li>
         </ul>
       ))}
-    </>
+    </div>
   );
 }
