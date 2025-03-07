@@ -12,6 +12,10 @@ export default function Comments() {
   const [showModal, setShowModal] = useState(false);
   const [comments, setComments] = useState([]);
 
+  function handleCloseModal() {
+    setShowModal(false);
+  }
+
   async function submitReply(event, content) {
 
     event.preventDefault();
@@ -32,39 +36,32 @@ export default function Comments() {
 
   useEffect(() => {
 
-    function getComments() {
-
-      if (!commentData) {
-        setComments([]);
-        return;
-      }
-
-      const commentsArray = Object.keys(commentData).map((key) => ({
-        id: key,
-        ...commentData[key],
-      }));
-
-      setComments(commentsArray);
+    if (!commentData) {
+      setComments([]);
+      return;
     }
 
-    getComments();
-  }, [commentData]);
+    const commentsArray = Object.keys(commentData).map((key) => (
+      {
+        id: key,
+        ...commentData[key],
+      }
+    ));
 
-  function handleCloseModal() {
-    setShowModal(false);
-  }
+    setComments(commentsArray);
+  }, [commentData]);
 
   return (
     <div>
       {showModal && (
         <Modal handleCloseModal={handleCloseModal}>
           <Authentication handleCloseModal={handleCloseModal} />
-        </Modal>
-      )}
+        </Modal>)
+      }
 
       {globalData && globalUser && (
-        <h1>Hello, {globalData.firstName} </h1>
-      )}
+        <h1>Hello, {globalData.firstName}</h1>)
+      }
 
       <h2>Comments</h2>
 
@@ -78,17 +75,19 @@ export default function Comments() {
             <p>Leave a comment</p>
             <CommentInput postComment={submitReply} />
           </div>
-        </div>
-      ) : (
-        <div>
-          <p>Login to leave a comment</p>
-          <button onClick={() => setShowModal(true)}>
-            Login
-          </button>
-        </div>
-      )}
+        </div>)
+        : (
+          <div>
+            <button onClick={() => setShowModal(true)}>
+              Login
+            </button>
+            <div>
+              <p>Login to leave a comment</p>
+            </div>
+          </div>)
+      }
 
       <CommentList comments={comments} />
-    </div >
+    </div>
   );
 }

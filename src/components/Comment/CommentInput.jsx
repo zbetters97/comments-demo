@@ -29,7 +29,6 @@ export default function CommentInput(props) {
       }}>
         Cancel
       </button>
-
     </form>
   );
 }

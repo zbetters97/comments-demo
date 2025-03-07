@@ -6,15 +6,17 @@ export default function CommentList(props) {
 
   return (
     <div>
-      {/* ONLY SHOW NON-REPLY COMMENTS */}
-      {/* LOOP THROUGH EACH COMMENT AND CREATE Comment COMPONENT*/}
-      {comments.filter((comment) => comment.replyingTo === "").map((comment) => (
-        <ul key={comment.id}>
-          <li>
-            <CommentContainer comment={comment} comments={comments} />
-          </li>
-        </ul>
-      ))}
+      {/* Only show non-reply comments */}
+      {/* Loop through each comment and create new component*/}
+      {comments.filter((comment) => comment.replyingTo === "").map((comment) => {
+        return (
+          <ul key={comment.id}>
+            <li>
+              <CommentContainer comment={comment} comments={comments} />
+            </li>
+          </ul>
+        );
+      })}
     </div>
   );
 }

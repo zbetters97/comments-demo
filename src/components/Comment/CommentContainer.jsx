@@ -79,24 +79,23 @@ export default function CommentContainer(props) {
         {comment.numDislikes}
       </button>
 
-      {globalUser &&
+      {globalUser && (
         <>
           <button onClick={() => setIsReplying(!isReplying)}>
             <i className="fa-solid fa-reply" />
             Reply
           </button>
 
-          {globalUser && globalUser.uid === comment.userId && (
+          {globalUser && globalUser.uid === comment.userId &&
             <button onClick={async () => await removeComment(commentId)}>
               Delete
             </button>
-          )}
-        </>
+          }
+        </>)
       }
 
-      {
-        globalUser && isReplying &&
-        <CommentInput postComment={submitReply} isReplying={setIsReplying} />
+      {globalUser && isReplying && (
+        <CommentInput postComment={submitReply} isReplying={setIsReplying} />)
       }
 
       <div>
@@ -108,29 +107,24 @@ export default function CommentContainer(props) {
             {showReplies ?
               <div>
                 <i className="fa-solid fa-angle-up" />
-                {
-                  (comment.replies.length == 1 ?
-                    "1 reply" :
-                    comment.replies.length + " replies"
-                  )
-                }
+                {(comment.replies.length == 1 ?
+                  "1 reply" :
+                  comment.replies.length + " replies"
+                )}
               </div> :
               <div>
                 <i className="fa-solid fa-angle-down" />
-                {
-                  (comment.replies.length == 1 ?
-                    "1 reply" :
-                    comment.replies.length + " replies"
-                  )
-                }
+                {(comment.replies.length == 1 ?
+                  "1 reply" :
+                  comment.replies.length + " replies"
+                )}
               </div>
             }
-          </button>
-        )}
+          </button>)
+        }
       </div>
 
-      {
-        showReplies &&
+      {showReplies && (
         <div>
           <ul>
             {renderReplies(comment.replies)}
@@ -142,8 +136,8 @@ export default function CommentContainer(props) {
               Show all {comment.replies.length} replies
             </button>
           }
-        </div>
+        </div>)
       }
-    </div >
+    </div>
   );
 }

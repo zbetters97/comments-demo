@@ -8,7 +8,7 @@ export default function Authentication(props) {
 
   const { signup, login } = useAuthContext();
 
-  // SIGNUP OR LOGIN
+  // Signup or login
   const [isRegistration, setIsRegistration] = useState(false);
 
   const [email, setEmail] = useState('');
@@ -22,7 +22,6 @@ export default function Authentication(props) {
     event.preventDefault();
 
     try {
-
       if (isRegistration) {
 
         if (!isSignupValid(email, password, firstName, lastName, phone)) {
@@ -53,12 +52,12 @@ export default function Authentication(props) {
   }
 
   return (
-    <>
+    <div>
       <h2>{isRegistration ? "Create an account" : "Login to your account"}</h2>
 
       <form onSubmit={submitAuthentication}>
 
-        {isRegistration &&
+        {isRegistration && (
           <div>
             <label htmlFor="firstName">First Name</label>
             <input
@@ -86,7 +85,7 @@ export default function Authentication(props) {
               onKeyDown={disableNonNumericInput}
               onKeyUp={formatPhoneNumber}
             />
-          </div>
+          </div>)
         }
 
         <label htmlFor="email">Email Address</label>
@@ -113,6 +112,6 @@ export default function Authentication(props) {
       <button onClick={() => { setIsRegistration(!isRegistration) }}>
         <p>{isRegistration ? "Sign In" : "Sign Up"}</p>
       </button>
-    </>
+    </div>
   );
 }

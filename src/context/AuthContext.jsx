@@ -111,16 +111,16 @@ export function AuthProvidor(props) {
       const commentRef = collection(db, "comments");
       const commentDoc = await addDoc(commentRef, comment);
 
-      // COMMENT IS A REPLY
+      // Comment is a reply
       if (replyId && replyId !== "") {
 
         const commentId = commentDoc.id;
 
-        // GET REPLIED TO COMMENT
+        // Get replied to comment
         const parentRef = doc(db, "comments", replyId);
         const parentDoc = await getDoc(parentRef);
 
-        // ADD ID TO REPLIES ARRAY
+        // Add to parent comment replies array
         if (parentDoc.exists()) {
           await updateDoc(parentRef, {
             replies: arrayUnion(commentId)
@@ -140,21 +140,21 @@ export function AuthProvidor(props) {
 
       if (commentDoc.exists()) {
 
-        // DELETE FROM DATABASE
+        // Delete from DB
         await deleteDoc(commentRef);
 
-        // REPLIED COMMENTS
+        // Get replied comments
         const children = commentDoc.data().replies;
 
         if (children && children.length > 0) {
 
-          // FOR EACH REPLY, DELETE FROM DATABASE
+          // For each reply, delete from DB
           children.forEach(async (childId) => {
             await removeComment(childId);
           });
         }
 
-        // REPLIED TO COMMENT
+        // Get replied to comment
         const parentId = commentDoc.data().replyingTo;
 
         if (parentId && parentId !== "") {
@@ -162,8 +162,8 @@ export function AuthProvidor(props) {
           const parentRef = doc(db, "comments", parentId);
           const parentDoc = await getDoc(parentRef);
 
+          // Remove self from parent comment replies array
           if (parentDoc.exists()) {
-
             await updateDoc(parentRef, {
               replies: arrayRemove(commentId)
             });
@@ -188,7 +188,7 @@ export function AuthProvidor(props) {
         const likes = commentDoc.data().likes;
         const dislikes = commentDoc.data().dislikes;
 
-        // USER ALREADY LIKED COMMENT, REMOVE LIKE
+        // User already liked comment, remove like
         if (likes.includes(uid)) {
           await updateDoc(commentRef, {
             likes: arrayRemove(uid)
@@ -196,14 +196,14 @@ export function AuthProvidor(props) {
         }
         else {
 
-          // USER DISLIKED COMMENT, REMOVE DISLIKE
+          // User disliked comment, remove dislike
           if (dislikes.includes(uid)) {
             await updateDoc(commentRef, {
               dislikes: arrayRemove(uid)
             })
           }
 
-          // ADD USER ID TO LIKES ARRAY
+          // Add user ID to likes array
           await updateDoc(commentRef, {
             likes: arrayUnion(uid)
           });
@@ -227,7 +227,7 @@ export function AuthProvidor(props) {
         const dislikes = commentDoc.data().dislikes;
         const likes = commentDoc.data().likes;
 
-        // USER ALREADY DISLIKED COMMENT, REMOVE DISLIKE
+        // User already disliked comment, remove dislike
         if (dislikes.includes(uid)) {
           await updateDoc(commentRef, {
             dislikes: arrayRemove(uid)
@@ -235,14 +235,14 @@ export function AuthProvidor(props) {
         }
         else {
 
-          // USER LIKED COMMENT, REMOVE LIKE
+          // User liked comment, remove like
           if (likes.includes(uid)) {
             await updateDoc(commentRef, {
               likes: arrayRemove(uid)
             })
           }
 
-          // ADD USER ID TO DISLIKES ARRAY
+          // Add user ID to dislikes array
           await updateDoc(commentRef, {
             dislikes: arrayUnion(uid)
           });
@@ -280,9 +280,10 @@ export function AuthProvidor(props) {
   }
 
   useEffect(() => {
-    return onAuthStateChanged(auth, async (user) => {
 
-      // UPDATE useState ON AUTH CHANGE
+    // Update global user on auth change
+    return () => onAuthStateChanged(auth, async (user) => {
+
       setGlobalUser(user);
 
       if (!user) {
@@ -303,13 +304,14 @@ export function AuthProvidor(props) {
       catch (error) {
         console.log(error.message);
       }
-    })
+    });
   }, []);
 
   useEffect(() => {
+
+    // Update commentData when DB updates
     return () => onSnapshot(collection(db, "comments"), async (comments) => {
 
-      // UPDATE commentData useState WHEN DATABASE UPDATES
       const commentInfo = await Promise.all(comments.docs.map(async (comment) => (
         {
           id: comment.id,
@@ -318,7 +320,8 @@ export function AuthProvidor(props) {
           numDislikes: comment.data().dislikes.length,
           date: getTimeSince(comment.data().createdAt.toDate()),
           ...await getUserById(comment.data().userId)
-        })));
+        }
+      )));
 
       setCommentData(commentInfo);
     });
@@ -330,7 +333,7 @@ export function AuthProvidor(props) {
   };
 
   return (
-    // PROVIDE useContext WITH DATABASE METHODS
+    // Provide useContext with DB values and methods
     <AuthContext.Provider value={dbMethods}>
       {children}
     </AuthContext.Provider>
