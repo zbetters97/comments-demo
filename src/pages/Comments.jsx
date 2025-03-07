@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
-import Modal from "./Modal";
-import Authentication from "./Authentication";
-import CommentList from "./CommentList";
+import Modal from "../components/Modal";
+import Authentication from "../components/Authentication";
+import CommentList from "../components/Comment/CommentList";
+import CommentInput from "../components/Comment/CommentInput";
 
 export default function Comments() {
 
@@ -10,7 +11,24 @@ export default function Comments() {
 
   const [showModal, setShowModal] = useState(false);
   const [comments, setComments] = useState([]);
-  const inputComment = useRef(null);
+
+  async function submitReply(event, content) {
+
+    event.preventDefault();
+
+    if (!content || !globalUser) {
+      return;
+    }
+
+    const replyInfo = {
+      content: content,
+      userId: globalUser.uid,
+      replyingTo: "",
+      replies: []
+    }
+
+    await addComment(replyInfo);
+  }
 
   useEffect(() => {
 
@@ -36,25 +54,6 @@ export default function Comments() {
     setShowModal(false);
   }
 
-  async function submitComment(event) {
-
-    event.preventDefault();
-
-    if (!inputComment.current.value || !globalUser) {
-      return;
-    }
-
-    const commentInfo = {
-      content: inputComment.current.value,
-      userId: globalUser.uid,
-      replyingTo: "",
-      replies: []
-    }
-
-    inputComment.current.value = "";
-    await addComment(commentInfo);
-  }
-
   return (
     <div>
       {showModal && (
@@ -71,21 +70,14 @@ export default function Comments() {
 
       {globalUser ? (
         <div>
-          <form onSubmit={(event) => submitComment(event)}>
-            <label htmlFor="comment">Post a comment</label>
-            <input
-              name="comment"
-              type="text"
-              ref={inputComment}
-            />
-
-            <button type="submit">
-              Submit
-            </button>
-          </form>
           <button onClick={() => logout()} >
             Logout
           </button>
+
+          <div>
+            <p>Leave a comment</p>
+            <CommentInput postComment={submitReply} />
+          </div>
         </div>
       ) : (
         <div>

@@ -1,10 +1,12 @@
-import Layout from "./components/Layout"
+import Comments from "./pages/Comments";
+import { AuthProvidor } from "./context/AuthContext";
 
 export default function App() {
 
   return (
-    <>
-      <Layout />
-    </>
+    // Authentication HAS ACCESS TO AuthContext useContext
+    <AuthProvidor>
+      <Comments />
+    </AuthProvidor>
   );
 }

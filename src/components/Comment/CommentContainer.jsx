@@ -1,59 +1,27 @@
-import { useRef, useState } from "react";
-import { useAuthContext } from "../context/AuthContext";
+import { useState } from "react";
+import { useAuthContext } from "../../context/AuthContext";
+import CommentInput from "./CommentInput";
 
-export default function Comment(props) {
+export default function CommentContainer(props) {
 
   const { comment, comments } = props;
   const commentId = comment.id;
+  const replyLimit = 5;
+
   const { globalUser, likeComment, dislikeComment, addComment, removeComment } = useAuthContext();
 
   const [showReplies, setShowReplies] = useState(false);
   const [showMoreReplies, setShowMoreReplies] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
-  const inputReply = useRef(null);
-
-  const replyLimit = 5;
-
-  async function submitReply(event) {
-
-    event.preventDefault();
-
-    if (!inputReply.current.value || !globalUser) {
-      return;
-    }
-
-    const replyInfo = {
-      content: inputReply.current.value,
-      userId: globalUser.uid,
-      replyingTo: commentId,
-      replies: []
-    }
-
-    await addComment(replyInfo, commentId);
-
-    inputReply.current.value = "";
-    setIsReplying(false);
-    setShowReplies(true);
-
-    if (comment.replies.length > replyLimit) {
-      setShowMoreReplies(true);
-    }
-  }
-
-  async function deleteComment() {
-    inputReply.current.value = "";
-    setIsReplying(false);
-
-    await removeComment(commentId);
-  }
 
   function renderReplies(replies) {
+
     if (!replies || replies.length === 0) {
       return null;
     }
 
     if (replies.length > replyLimit && !showMoreReplies) {
-      replies = replies.slice(0, replyLimit - 1);
+      replies = replies.slice(0, replyLimit);
     }
 
     return replies.map((replyId) => {
@@ -66,10 +34,35 @@ export default function Comment(props) {
 
       return (
         <li key={reply.id}>
-          <Comment comment={reply} comments={comments} />
+          <CommentContainer comment={reply} comments={comments} />
         </li>
       );
     });
+  }
+
+  async function submitReply(event, content) {
+
+    event.preventDefault();
+
+    if (!content || !globalUser) {
+      return;
+    }
+
+    const replyInfo = {
+      content: content,
+      userId: globalUser.uid,
+      replyingTo: commentId,
+      replies: []
+    }
+
+    await addComment(replyInfo, commentId);
+
+    setIsReplying(false);
+    setShowReplies(true);
+
+    if (comment.replies.length > replyLimit) {
+      setShowMoreReplies(true);
+    }
   }
 
   return (
@@ -86,36 +79,25 @@ export default function Comment(props) {
         {comment.numDislikes}
       </button>
 
-      <button onClick={() => setIsReplying(!isReplying)}>
-        <i className="fa-solid fa-reply" />
-        Reply
-      </button>
-
-      {globalUser && globalUser.uid === comment.userId && (
-        <button onClick={() => deleteComment()}>
-          Delete
-        </button>
-      )}
-
-      {globalUser && isReplying && (
-        <form onSubmit={(event) => submitReply(event)}>
-          <label htmlFor="reply">Reply</label>
-          <input
-            name="reply"
-            type="text"
-            ref={inputReply}
-          />
-          <button type="submit">
-            Submit
+      {globalUser &&
+        <>
+          <button onClick={() => setIsReplying(!isReplying)}>
+            <i className="fa-solid fa-reply" />
+            Reply
           </button>
-          <button onClick={() => setIsReplying(false)}>
-            Cancel
-          </button>
-        </form>
-      )
+
+          {globalUser && globalUser.uid === comment.userId && (
+            <button onClick={async () => await removeComment(commentId)}>
+              Delete
+            </button>
+          )}
+        </>
       }
 
-
+      {
+        globalUser && isReplying &&
+        <CommentInput postComment={submitReply} isReplying={setIsReplying} />
+      }
 
       <div>
         {comment.replies && comment.replies.length > 0 && (
@@ -147,7 +129,8 @@ export default function Comment(props) {
         )}
       </div>
 
-      {showReplies &&
+      {
+        showReplies &&
         <div>
           <ul>
             {renderReplies(comment.replies)}
@@ -161,6 +144,6 @@ export default function Comment(props) {
           }
         </div>
       }
-    </div>
+    </div >
   );
 }

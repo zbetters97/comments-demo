@@ -1,4 +1,4 @@
-import Comment from "./Comment";
+import CommentContainer from "./CommentContainer";
 
 export default function CommentList(props) {
 
@@ -11,7 +11,7 @@ export default function CommentList(props) {
       {comments.filter((comment) => comment.replyingTo === "").map((comment) => (
         <ul key={comment.id}>
           <li>
-            <Comment comment={comment} comments={comments} />
+            <CommentContainer comment={comment} comments={comments} />
           </li>
         </ul>
       ))}
