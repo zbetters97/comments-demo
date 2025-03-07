@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../../firebase";
 import { createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, setDoc, updateDoc } from "firebase/firestore";
+import { getTimeSince } from "../utils/date";
 
 const AuthContext = createContext();
 
@@ -107,21 +108,21 @@ export function AuthProvidor(props) {
         dislikes: [],
       }
 
-      let commentRef = collection(db, "comments");
-      let commentDoc = await addDoc(commentRef, comment);
+      const commentRef = collection(db, "comments");
+      const commentDoc = await addDoc(commentRef, comment);
 
       // COMMENT IS A REPLY
-      if (replyId && commentInfo.reply) {
+      if (replyId && replyId !== "") {
 
         const commentId = commentDoc.id;
 
         // GET REPLIED TO COMMENT
-        commentRef = doc(db, "comments", replyId);
-        commentDoc = await getDoc(commentRef);
+        const parentRef = doc(db, "comments", replyId);
+        const parentDoc = await getDoc(parentRef);
 
         // ADD ID TO REPLIES ARRAY
-        if (commentDoc.exists()) {
-          await updateDoc(commentRef, {
+        if (parentDoc.exists()) {
+          await updateDoc(parentRef, {
             replies: arrayUnion(commentId)
           });
         }
@@ -142,17 +143,32 @@ export function AuthProvidor(props) {
         // DELETE FROM DATABASE
         await deleteDoc(commentRef);
 
-        // GET REPLIED COMMENTS
-        const replies = commentDoc.data().replies;
+        // REPLIED COMMENTS
+        const children = commentDoc.data().replies;
 
-        if (!replies || !replies.length > 0) {
-          return;
+        if (children && children.length > 0) {
+
+          // FOR EACH REPLY, DELETE FROM DATABASE
+          children.forEach(async (childId) => {
+            await removeComment(childId);
+          });
         }
 
-        // FOR EACH REPLY, DELETE FROM DATABASE
-        replies.forEach(async (replyId) => {
-          await removeComment(replyId);
-        });
+        // REPLIED TO COMMENT
+        const parentId = commentDoc.data().replyingTo;
+
+        if (parentId && parentId !== "") {
+
+          const parentRef = doc(db, "comments", parentId);
+          const parentDoc = await getDoc(parentRef);
+
+          if (parentDoc.exists()) {
+
+            await updateDoc(parentRef, {
+              replies: arrayRemove(commentId)
+            });
+          }
+        }
       }
     } catch (error) {
       console.log(error.message);
@@ -291,20 +307,25 @@ export function AuthProvidor(props) {
   }, []);
 
   useEffect(() => {
-    return () => onSnapshot(collection(db, "comments"), (comments) => {
+    return () => onSnapshot(collection(db, "comments"), async (comments) => {
 
       // UPDATE commentData useState WHEN DATABASE UPDATES
-      const commentInfo = comments.docs.map((comment) => ({
-        id: comment.id,
-        ...comment.data(),
-      }));
+      const commentInfo = await Promise.all(comments.docs.map(async (comment) => (
+        {
+          id: comment.id,
+          ...comment.data(),
+          numLikes: comment.data().likes.length,
+          numDislikes: comment.data().dislikes.length,
+          date: getTimeSince(comment.data().createdAt.toDate()),
+          ...await getUserById(comment.data().userId)
+        })));
 
       setCommentData(commentInfo);
     });
   }, []);
 
   const dbMethods = {
-    globalUser, globalData, signup, login, logout, resetPassword, getUserById,
+    globalUser, globalData, signup, login, logout, resetPassword,
     commentData, getReplies, likeComment, dislikeComment, addComment, removeComment,
   };
 

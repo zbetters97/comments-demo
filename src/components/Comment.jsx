@@ -1,62 +1,48 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
 
 export default function Comment(props) {
 
   const { comment, comments } = props;
+  const commentId = comment.id;
   const { globalUser, likeComment, dislikeComment, addComment, removeComment } = useAuthContext();
 
-  const [replyingTo, setReplyingTo] = useState([]);
-  const [replies, setReplies] = useState({});
+  const [showReplies, setShowReplies] = useState(false);
+  const [showMoreReplies, setShowMoreReplies] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
+  const inputReply = useRef(null);
 
-  function resetReplyState(commentId) {
+  const replyLimit = 5;
 
-    // RESET useState COMMENT REPLY
-    const { [commentId]: removedKey, ...current } = replies;
-    setReplies(current);
-
-    // REMOVE REPLY MATCHING SAME ID
-    setReplyingTo([...replyingTo.filter(c => c !== commentId)]);
-  }
-
-  function replyToComment(commentId) {
-
-    // CANCEL REPLY
-    if (replyingTo.includes(commentId)) {
-      resetReplyState(commentId);
-    }
-    // POST REPLY
-    else {
-      setReplyingTo([...replyingTo, commentId]);
-    }
-  }
-
-  async function submitReply(event, commentId) {
+  async function submitReply(event) {
 
     event.preventDefault();
 
-    if (!replies[commentId] || !globalUser) {
+    if (!inputReply.current.value || !globalUser) {
       return;
     }
 
     const replyInfo = {
-      content: replies[commentId],
+      content: inputReply.current.value,
       userId: globalUser.uid,
-      reply: true,
+      replyingTo: commentId,
       replies: []
     }
 
     await addComment(replyInfo, commentId);
-    resetReplyState(commentId);
+
+    inputReply.current.value = "";
+    setIsReplying(false);
+    setShowReplies(true);
+
+    if (comment.replies.length > replyLimit) {
+      setShowMoreReplies(true);
+    }
   }
 
-
-
-  async function deleteComment(commentId) {
-
-    if (!commentId) {
-      return;
-    }
+  async function deleteComment() {
+    inputReply.current.value = "";
+    setIsReplying(false);
 
     await removeComment(commentId);
   }
@@ -64,6 +50,10 @@ export default function Comment(props) {
   function renderReplies(replies) {
     if (!replies || replies.length === 0) {
       return null;
+    }
+
+    if (replies.length > replyLimit && !showMoreReplies) {
+      replies = replies.slice(0, replyLimit - 1);
     }
 
     return replies.map((replyId) => {
@@ -75,70 +65,102 @@ export default function Comment(props) {
       }
 
       return (
-        <ul key={reply.id}>
-          <li>
-            <Comment comment={reply} comments={comments} />
-          </li>
-        </ul>
-      )
+        <li key={reply.id}>
+          <Comment comment={reply} comments={comments} />
+        </li>
+      );
     });
-  };
+  }
 
   return (
     <div>
       <p>{comment.firstName} {comment.lastName.charAt(0)} &#183; {comment.date}</p>
       <p>"{comment.content}"</p>
 
-      <button onClick={() => likeComment(comment.id)}>
-        <i className="fa-solid fa-thumbs-up"></i>
+      <button onClick={() => likeComment(commentId)}>
+        <i className="fa-solid fa-thumbs-up" />
         {comment.numLikes}
       </button>
-      <button onClick={() => dislikeComment(comment.id)}>
-        <i className="fa-solid fa-thumbs-down"></i>
+      <button onClick={() => dislikeComment(commentId)}>
+        <i className="fa-solid fa-thumbs-down" />
         {comment.numDislikes}
       </button>
 
+      <button onClick={() => setIsReplying(!isReplying)}>
+        <i className="fa-solid fa-reply" />
+        Reply
+      </button>
+
       {globalUser && globalUser.uid === comment.userId && (
-        <button onClick={() => deleteComment(comment.id)}>
+        <button onClick={() => deleteComment()}>
           Delete
         </button>
       )}
 
-      {globalUser && (
-
-        <div>
-          <button onClick={() => replyToComment(comment.id)}>
-            Reply
+      {globalUser && isReplying && (
+        <form onSubmit={(event) => submitReply(event)}>
+          <label htmlFor="reply">Reply</label>
+          <input
+            name="reply"
+            type="text"
+            ref={inputReply}
+          />
+          <button type="submit">
+            Submit
           </button>
-
-          {replyingTo.includes(comment.id) &&
-
-            <form onSubmit={(event) => submitReply(event, comment.id)}>
-              <label htmlFor="reply">Reply</label>
-              <input
-                name="reply"
-                type="text"
-                value={replies[comment.id] || ""}
-                onChange={(event) => {
-                  setReplies((reply) => ({
-                    ...reply,
-                    [comment.id]: event.target.value
-                  }));
-                }}
-              />
-              <button type="submit">
-                Submit
-              </button>
-              <button onClick={() => replyToComment(comment.id)}>
-                Cancel
-              </button>
-            </form>
-          }
-        </div>
+          <button onClick={() => setIsReplying(false)}>
+            Cancel
+          </button>
+        </form>
       )
       }
 
-      {renderReplies(comment.replies)}
-    </div >
+
+
+      <div>
+        {comment.replies && comment.replies.length > 0 && (
+          <button onClick={() => {
+            setShowReplies(!showReplies)
+            setShowMoreReplies(false);
+          }}>
+            {showReplies ?
+              <div>
+                <i className="fa-solid fa-angle-up" />
+                {
+                  (comment.replies.length == 1 ?
+                    "1 reply" :
+                    comment.replies.length + " replies"
+                  )
+                }
+              </div> :
+              <div>
+                <i className="fa-solid fa-angle-down" />
+                {
+                  (comment.replies.length == 1 ?
+                    "1 reply" :
+                    comment.replies.length + " replies"
+                  )
+                }
+              </div>
+            }
+          </button>
+        )}
+      </div>
+
+      {showReplies &&
+        <div>
+          <ul>
+            {renderReplies(comment.replies)}
+          </ul>
+
+          {!showMoreReplies && comment.replies.length > replyLimit &&
+            <button onClick={() => setShowMoreReplies(true)}>
+              <i className="fa-solid fa-angles-down" />
+              Show all {comment.replies.length} replies
+            </button>
+          }
+        </div>
+      }
+    </div>
   );
 }

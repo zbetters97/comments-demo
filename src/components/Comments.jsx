@@ -3,36 +3,28 @@ import { useAuthContext } from "../context/AuthContext";
 import Modal from "./Modal";
 import Authentication from "./Authentication";
 import CommentList from "./CommentList";
-import { getTimeSince } from "../utils/date";
 
 export default function Comments() {
 
-  const { globalUser, globalData, logout, getUserById, commentData, addComment } = useAuthContext();
+  const { globalUser, globalData, logout, commentData, addComment } = useAuthContext();
 
   const [showModal, setShowModal] = useState(false);
   const [comments, setComments] = useState([]);
-  const comment = useRef(null);
+  const inputComment = useRef(null);
 
   useEffect(() => {
 
-    const getComments = async () => {
+    function getComments() {
 
       if (!commentData) {
         setComments([]);
         return;
       }
 
-      const commentsArray = await Promise.all(Object.keys(commentData)
-        .map(async (key) => (
-          {
-            id: key,
-            ...commentData[key],
-            numLikes: commentData[key].likes.length,
-            numDislikes: commentData[key].dislikes.length,
-            date: getTimeSince(commentData[key].createdAt.toDate()),
-            ...await getUserById(commentData[key].userId)
-          }
-        )));
+      const commentsArray = Object.keys(commentData).map((key) => ({
+        id: key,
+        ...commentData[key],
+      }));
 
       setComments(commentsArray);
     }
@@ -48,18 +40,18 @@ export default function Comments() {
 
     event.preventDefault();
 
-    if (!comment || !globalUser) {
+    if (!inputComment.current.value || !globalUser) {
       return;
     }
 
     const commentInfo = {
-      content: comment.current.value,
+      content: inputComment.current.value,
       userId: globalUser.uid,
-      reply: false,
+      replyingTo: "",
       replies: []
     }
 
-    comment.current.value = "";
+    inputComment.current.value = "";
     await addComment(commentInfo);
   }
 
@@ -84,8 +76,7 @@ export default function Comments() {
             <input
               name="comment"
               type="text"
-              ref={comment}
-              onChange={(event) => (comment.current.value = event.target.value)}
+              ref={inputComment}
             />
 
             <button type="submit">

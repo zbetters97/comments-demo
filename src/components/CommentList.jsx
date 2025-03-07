@@ -8,7 +8,7 @@ export default function CommentList(props) {
     <div>
       {/* ONLY SHOW NON-REPLY COMMENTS */}
       {/* LOOP THROUGH EACH COMMENT AND CREATE Comment COMPONENT*/}
-      {comments.filter((comment) => !comment.reply).map((comment) => (
+      {comments.filter((comment) => comment.replyingTo === "").map((comment) => (
         <ul key={comment.id}>
           <li>
             <Comment comment={comment} comments={comments} />

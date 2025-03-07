@@ -4,19 +4,18 @@ import { disableNonNumericInput, formatPhoneNumber, isLoginValid, isSignupValid 
 
 export default function Authentication(props) {
 
-  // IF SIGNUP OR LOGIN
-  const [isRegistration, setIsRegistration] = useState(false);
-
   const { handleCloseModal } = props;
 
+  const { signup, login } = useAuthContext();
+
+  // SIGNUP OR LOGIN
+  const [isRegistration, setIsRegistration] = useState(false);
+
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-
-  // PULL DATABASE METHODS FROM AuthProvidor
-  const { signup, login } = useAuthContext();
 
   async function submitAuthentication(event) {
 
@@ -31,7 +30,6 @@ export default function Authentication(props) {
         }
 
         await signup(email, password, firstName, lastName, phone);
-
         setIsRegistration(false);
       }
       else {
@@ -40,9 +38,14 @@ export default function Authentication(props) {
         }
 
         await login(email, password);
-
         handleCloseModal();
       }
+
+      setEmail("");
+      setPassword("");
+      setFirstName("");
+      setLastName("");
+      setPhone("");
     }
     catch (error) {
       console.log(error);
@@ -90,7 +93,6 @@ export default function Authentication(props) {
         <input
           name="email"
           type="text"
-          placeholder="Enter your email address"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />
@@ -99,7 +101,6 @@ export default function Authentication(props) {
         <input
           name="password"
           type="password"
-          placeholder="Enter your password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
