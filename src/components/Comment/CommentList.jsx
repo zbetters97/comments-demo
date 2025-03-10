@@ -1,14 +1,20 @@
+import { useMemo } from "react";
 import CommentContainer from "./CommentContainer";
 
-export default function CommentList(props) {
+export default function CommentList({ comments }) {
 
-  const { comments } = props;
+  // Freeze topComments until comments data changes
+  const topComments = useMemo(
+
+    // Only show non-reply comments
+    () => comments.filter((comment) => comment.replyingTo === "") || null,
+    [comments]
+  );
 
   return (
     <div>
-      {/* Only show non-reply comments */}
       {/* Loop through each comment and create new component*/}
-      {comments.filter((comment) => comment.replyingTo === "").map((comment) => {
+      {topComments.map((comment) => {
         return (
           <ul key={comment.id}>
             <li>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import Modal from "../components/Modal";
 import Authentication from "../components/Authentication";
@@ -10,13 +10,29 @@ export default function Comments() {
   const { globalUser, globalData, logout, commentData, addComment } = useAuthContext();
 
   const [showModal, setShowModal] = useState(false);
-  const [comments, setComments] = useState([]);
 
   function handleCloseModal() {
     setShowModal(false);
   }
 
-  async function submitReply(event, content) {
+  // Freezes comments variable until commentData changes
+  const comments = useMemo(
+    () => {
+      if (!commentData || commentData.length === 0) {
+        return [];
+      }
+
+      return commentData.map((comment) => ({
+        id: comment.id,
+        ...comment
+      }));
+    },
+
+    [commentData]
+  );
+
+  // Memoizes function to prevent re-render of CommentInput (when globalUser loads)
+  const postComment = useCallback(async (event, content) => {
 
     event.preventDefault();
 
@@ -32,24 +48,7 @@ export default function Comments() {
     }
 
     await addComment(replyInfo);
-  }
-
-  useEffect(() => {
-
-    if (!commentData) {
-      setComments([]);
-      return;
-    }
-
-    const commentsArray = Object.keys(commentData).map((key) => (
-      {
-        id: key,
-        ...commentData[key],
-      }
-    ));
-
-    setComments(commentsArray);
-  }, [commentData]);
+  }, [globalUser]);
 
   return (
     <div>
@@ -73,7 +72,7 @@ export default function Comments() {
 
           <div>
             <p>Leave a comment</p>
-            <CommentInput postComment={submitReply} />
+            <CommentInput postComment={postComment} />
           </div>
         </div>)
         : (

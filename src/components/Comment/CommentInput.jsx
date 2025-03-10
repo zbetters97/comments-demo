@@ -1,8 +1,6 @@
-import { useRef } from "react";
+import { memo, useRef } from "react";
 
-export default function CommentInput(props) {
-
-  const { isReplying, postComment } = props;
+function CommentInput({ isReplying, postComment }) {
 
   const inputComment = useRef(null);
 
@@ -32,3 +30,6 @@ export default function CommentInput(props) {
     </form>
   );
 }
+
+// Wraps with Memo to only re-render if props are different
+export default memo(CommentInput);

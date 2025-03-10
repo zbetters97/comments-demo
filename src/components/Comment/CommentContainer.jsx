@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useAuthContext } from "../../context/AuthContext";
 import CommentInput from "./CommentInput";
 
-export default function CommentContainer(props) {
+export default function CommentContainer({ comment, comments }) {
 
-  const { comment, comments } = props;
   const commentId = comment.id;
   const replyLimit = 5;
 
@@ -40,7 +39,8 @@ export default function CommentContainer(props) {
     });
   }
 
-  async function submitReply(event, content) {
+  // Memoizes function to prevent re-render of CommentInput
+  const submitReply = useCallback(async (event, content) => {
 
     event.preventDefault();
 
@@ -63,7 +63,7 @@ export default function CommentContainer(props) {
     if (comment.replies.length > replyLimit) {
       setShowMoreReplies(true);
     }
-  }
+  }, []);
 
   return (
     <div>
@@ -86,10 +86,10 @@ export default function CommentContainer(props) {
             Reply
           </button>
 
-          {globalUser && globalUser.uid === comment.userId &&
+          {globalUser.uid === comment.userId && (
             <button onClick={async () => await removeComment(commentId)}>
               Delete
-            </button>
+            </button>)
           }
         </>)
       }
@@ -104,21 +104,21 @@ export default function CommentContainer(props) {
             setShowReplies(!showReplies)
             setShowMoreReplies(false);
           }}>
-            {showReplies ?
+            {showReplies ? (
               <div>
                 <i className="fa-solid fa-angle-up" />
                 {(comment.replies.length == 1 ?
                   "1 reply" :
                   comment.replies.length + " replies"
                 )}
-              </div> :
+              </div>) : (
               <div>
                 <i className="fa-solid fa-angle-down" />
                 {(comment.replies.length == 1 ?
                   "1 reply" :
                   comment.replies.length + " replies"
                 )}
-              </div>
+              </div>)
             }
           </button>)
         }
@@ -130,11 +130,11 @@ export default function CommentContainer(props) {
             {renderReplies(comment.replies)}
           </ul>
 
-          {!showMoreReplies && comment.replies.length > replyLimit &&
+          {!showMoreReplies && comment.replies.length > replyLimit && (
             <button onClick={() => setShowMoreReplies(true)}>
               <i className="fa-solid fa-angles-down" />
-              Show all {comment.replies.length} replies
-            </button>
+              Show all replies
+            </button>)
           }
         </div>)
       }

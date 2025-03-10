@@ -2,9 +2,7 @@ import { useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import { disableNonNumericInput, formatPhoneNumber, isLoginValid, isSignupValid } from "../utils/form";
 
-export default function Authentication(props) {
-
-  const { handleCloseModal } = props;
+export default function Authentication({ handleCloseModal }) {
 
   const { signup, login } = useAuthContext();
 
