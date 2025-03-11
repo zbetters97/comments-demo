@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+* {
+  font-family: "Inter", Arial, Helvetica, sans-serif;
+}
+
+button {
+  cursor: pointer;
+}

@@ -1,19 +1,16 @@
 import { useCallback, useMemo, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
-import Modal from "../components/Modal";
 import Authentication from "../components/Authentication";
 import CommentList from "../components/Comment/CommentList";
 import CommentInput from "../components/Comment/CommentInput";
+import "../styles/pages/css/comments.css";
+import Modal from "../components/Modal"
 
 export default function Comments() {
 
   const { globalUser, globalData, logout, commentData, addComment } = useAuthContext();
 
-  const [showModal, setShowModal] = useState(false);
-
-  function handleCloseModal() {
-    setShowModal(false);
-  }
+  const [openModal, setOpenModal] = useState(false);
 
   // Freezes comments variable until commentData changes
   const comments = useMemo(
@@ -27,7 +24,6 @@ export default function Comments() {
         ...comment
       }));
     },
-
     [commentData]
   );
 
@@ -51,42 +47,43 @@ export default function Comments() {
   }, [globalUser]);
 
   return (
-    <div>
-      {showModal && (
-        <Modal handleCloseModal={handleCloseModal}>
-          <Authentication handleCloseModal={handleCloseModal} />
-        </Modal>)
-      }
+    <div className="w-screen p-4">
+      <Modal open={openModal} onClose={() => setOpenModal(false)}>
+        <Authentication onClose={() => setOpenModal(false)} />
+      </Modal>
 
-      {globalData && globalUser && (
-        <h1>Hello, {globalData.firstName}</h1>)
-      }
-
-      <h2>Comments</h2>
-
-      {globalUser ? (
-        <div>
-          <button onClick={() => logout()} >
-            Logout
-          </button>
-
-          <div>
-            <p>Leave a comment</p>
-            <CommentInput postComment={postComment} />
-          </div>
-        </div>)
-        : (
-          <div>
-            <button onClick={() => setShowModal(true)}>
-              Login
+      <div className="w-1/1 p-4 m-auto flex justify-between align-center">
+        {globalData && globalUser ? (
+          <>
+            <h1 className="text-lg">
+              Hello, {globalData.firstName}
+            </h1>
+            <button
+              className="bg-gray-300 rounded-sm py-1 px-3"
+              onClick={() => logout()}
+            >
+              Logout
             </button>
-            <div>
-              <p>Login to leave a comment</p>
-            </div>
-          </div>)
-      }
+          </>
+        ) : (
+          <button
+            className="bg-gray-300 rounded-sm py-1 px-3"
+            data-modal-target="default-modal" data-modal-toggle="default-modal"
+            onClick={() => setOpenModal(true)}
+          >
+            Login
+          </button>)
+        }
+      </div>
 
-      <CommentList comments={comments} />
+      <h2 className="text-xl font-bold">
+        {comments.length} Comments
+      </h2>
+
+      <div className="p-4 w-10/12">
+        {globalUser && <CommentInput postComment={postComment} />}
+        <CommentList comments={comments} />
+      </div>
     </div>
   );
 }

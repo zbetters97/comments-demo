@@ -10,23 +10,34 @@ function CommentInput({ isReplying, postComment }) {
   }
 
   return (
-    <form onSubmit={(event) => submit(event)}>
+    <form
+      className={`flex flex-wrap gap-1  ${isReplying && 'pt-2 pl-4'}`}
+      onSubmit={(event) => submit(event)}
+    >
       <input
-        name="comment"
-        type="text"
+        className="basis-full border-1 border-transparent focus:outline-none focus:border-b-1 focus:border-b-black"
+        placeholder={isReplying ? "Add a reply..." : "Add a comment..."}
         ref={inputComment}
       />
 
-      <button type="submit">
-        Submit
-      </button>
+      <div className="basis-full justify-end flex gap-1">
+        <button
+          className="py-1.5 px-3 rounded-full hover:bg-gray-300"
+          type="submit"
+        >
+          {isReplying ? "Reply" : "Post"}
+        </button>
 
-      <button onClick={() => {
-        inputComment.current.value = "";
-        isReplying && isReplying(false);
-      }}>
-        Cancel
-      </button>
+        <button
+          className="py-1.5 px-3 rounded-full hover:bg-gray-300"
+          onClick={() => {
+            inputComment.current.value = "";
+            isReplying && isReplying(false);
+          }}
+        >
+          Cancel
+        </button>
+      </div>
     </form>
   );
 }

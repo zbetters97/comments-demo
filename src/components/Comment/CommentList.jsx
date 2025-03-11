@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import CommentContainer from "./CommentContainer";
+import CommentCard from "./CommentCard";
 
 export default function CommentList({ comments }) {
 
@@ -12,13 +12,13 @@ export default function CommentList({ comments }) {
   );
 
   return (
-    <div>
+    <div className="flex flex-col gap-2">
       {/* Loop through each comment and create new component*/}
       {topComments.map((comment) => {
         return (
           <ul key={comment.id}>
             <li>
-              <CommentContainer comment={comment} comments={comments} />
+              <CommentCard comment={comment} comments={comments} />
             </li>
           </ul>
         );

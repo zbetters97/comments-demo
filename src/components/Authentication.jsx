@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import { disableNonNumericInput, formatPhoneNumber, isLoginValid, isSignupValid } from "../utils/form";
 
-export default function Authentication({ handleCloseModal }) {
+export default function Authentication({ onClose }) {
 
   const { signup, login } = useAuthContext();
 
@@ -21,7 +21,6 @@ export default function Authentication({ handleCloseModal }) {
 
     try {
       if (isRegistration) {
-
         if (!isSignupValid(email, password, firstName, lastName, phone)) {
           return;
         }
@@ -35,7 +34,7 @@ export default function Authentication({ handleCloseModal }) {
         }
 
         await login(email, password);
-        handleCloseModal();
+        onClose();
       }
 
       setEmail("");
@@ -50,64 +49,87 @@ export default function Authentication({ handleCloseModal }) {
   }
 
   return (
-    <div>
-      <h2>{isRegistration ? "Create an account" : "Login to your account"}</h2>
+    <div className="text-2xl flex flex-col justify-evenly items-center gap-10">
 
-      <form onSubmit={submitAuthentication}>
+      <h2 className="font-bold">
+        {isRegistration ? "Create an account" : "Login to your account"}
+      </h2>
+
+      <form
+        className="flex flex-col gap-5 [&>div]:flex [&>div]:justify-between [&>div]:gap-4 [&_input]:border-1"
+        onSubmit={submitAuthentication}
+      >
 
         {isRegistration && (
-          <div>
-            <label htmlFor="firstName">First Name</label>
-            <input
-              name="firstName"
-              type="text"
-              value={firstName}
-              onChange={(event) => setFirstName(event.target.value)}
-            />
+          <>
+            <div>
+              <label htmlFor="firstName">First Name</label>
+              <input
+                className="border-1 border-black"
+                name="firstName"
+                type="text"
+                value={firstName}
+                onChange={(event) => setFirstName(event.target.value)}
+              />
+            </div>
 
-            <label htmlFor="lastName">Last Name</label>
-            <input
-              name="lastName"
-              type="text"
-              value={lastName}
-              onChange={(event) => setLastName(event.target.value)}
-            />
+            <div>
+              <label htmlFor="lastName">Last Name</label>
+              <input
+                name="lastName"
+                type="text"
+                value={lastName}
+                onChange={(event) => setLastName(event.target.value)}
+              />
+            </div>
 
-            <label htmlFor="phone">Phone Number</label>
-            <input
-              name="phone"
-              type="tel"
-              maxLength="16"
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              onKeyDown={disableNonNumericInput}
-              onKeyUp={formatPhoneNumber}
-            />
-          </div>)
+            <div>
+              <label htmlFor="phone">Phone #</label>
+              <input
+                name="phone"
+                type="tel"
+                maxLength="16"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                onKeyDown={disableNonNumericInput}
+                onKeyUp={formatPhoneNumber}
+              />
+            </div>
+          </>)
         }
 
-        <label htmlFor="email">Email Address</label>
-        <input
-          name="email"
-          type="text"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-        />
+        <div>
+          <label htmlFor="email">Email Address</label>
+          <input
+            name="email"
+            type="text"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+        </div>
 
-        <label htmlFor="password">Password</label>
-        <input
-          name="password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-        />
+        <div>
+          <label htmlFor="password">Password</label>
+          <input
+            name="password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+        </div>
 
-        <button type="submit">
+        <button
+          className="self-start m-auto text-white bg-gray-900 rounded-full py-1.5 px-3 "
+          type="submit"
+        >
           Submit
         </button>
       </form>
 
-      <button onClick={() => { setIsRegistration(!isRegistration) }}>
+      <button
+        className="py-1.5 px-3 rounded-full hover:bg-gray-300"
+        onClick={() => { setIsRegistration(!isRegistration) }}
+      >
         <p>{isRegistration ? "Sign In" : "Sign Up"}</p>
       </button>
     </div>

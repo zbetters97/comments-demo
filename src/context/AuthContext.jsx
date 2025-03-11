@@ -310,20 +310,42 @@ export function AuthProvidor(props) {
   useEffect(() => {
 
     // Update commentData when DB updates
-    return () => onSnapshot(collection(db, "comments"), async (comments) => {
+    return () => onSnapshot(collection(db, "comments"), async (snapshot) => {
 
-      const commentInfo = await Promise.all(comments.docs.map(async (comment) => (
-        {
-          id: comment.id,
-          ...comment.data(),
-          numLikes: comment.data().likes.length,
-          numDislikes: comment.data().dislikes.length,
-          date: getTimeSince(comment.data().createdAt.toDate()),
-          ...await getUserById(comment.data().userId)
-        }
-      )));
+      // Track changes to comments
+      snapshot.docChanges().forEach(async (change) => {
 
-      setCommentData(commentInfo);
+        const user = await getUserById(change.doc.data().userId);
+
+        const comment = {
+          id: change.doc.id,
+          ...change.doc.data(),
+          date: getTimeSince(change.doc.data().createdAt.toDate()),
+          firstName: user.firstName,
+          lastName: user.lastName
+        };
+
+        setCommentData((prevComments) => {
+
+          const updatedComments = [...prevComments];
+          const index = updatedComments.findIndex((c) => c.id === comment.id);
+
+          if (change.type === "added" || change.type === "modified") {
+            if (index > -1) {
+              updatedComments[index] = comment;
+            } else {
+              updatedComments.push(comment);
+            }
+          }
+          else if (change.type === "removed") {
+            if (index > -1) {
+              updatedComments.splice(index, 1);
+            }
+          }
+
+          return updatedComments;
+        });
+      });
     });
   }, []);
 
