@@ -3,7 +3,7 @@ import { useAuthContext } from "../context/AuthContext";
 import Authentication from "../components/Authentication";
 import CommentList from "../components/Comment/CommentList";
 import CommentInput from "../components/Comment/CommentInput";
-import "../styles/pages/css/comments.css";
+import "../styles/pages/css/Comments.css";
 import Modal from "../components/Modal"
 
 export default function Comments() {
@@ -76,9 +76,7 @@ export default function Comments() {
         }
       </div>
 
-      <h2 className="text-xl font-bold">
-        {comments.length} Comments
-      </h2>
+      <h2 className="text-xl font-bold">{comments.length} Comments</h2>
 
       <div className="p-4 w-10/12">
         {globalUser && <CommentInput postComment={postComment} />}

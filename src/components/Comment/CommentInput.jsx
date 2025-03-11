@@ -15,7 +15,7 @@ function CommentInput({ isReplying, postComment }) {
       onSubmit={(event) => submit(event)}
     >
       <input
-        className="basis-full border-1 border-transparent focus:outline-none focus:border-b-1 focus:border-b-black"
+        className="basis-full border-1 border-b-gray-400 border-transparent focus:outline-none focus:border-b-1 focus:border-b-black"
         placeholder={isReplying ? "Add a reply..." : "Add a comment..."}
         ref={inputComment}
       />

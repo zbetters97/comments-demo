@@ -6,7 +6,8 @@ export default function Modal({ open, onClose, children }) {
     >
       <div
         className={`bg-white rounded-sm p-6 fixed top-1/2 left-1/2 -translate-1/2 -translate-1/2 transition-all 
-        ${open ? "scale-100 opacity-100 " : "scale-50 opacity-0"}`}>
+        ${open ? "scale-100 opacity-100 " : "scale-50 opacity-0"}`}
+      >
         <button
           className="font-bold text-3xl absolute top-0 right-2"
           onClick={onClose}
