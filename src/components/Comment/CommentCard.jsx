@@ -12,6 +12,34 @@ export default function CommentCard({ comment, comments }) {
   const [showReplies, setShowReplies] = useState(false);
   const [showMoreReplies, setShowMoreReplies] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isDisliked, setIsDisliked] = useState(false);
+
+  function submitLike() {
+    likeComment(commentId);
+
+    // Play animation if user likes for first time
+    if (globalUser && !comment.likes.includes(globalUser.uid)) {
+      setIsLiked(true);
+
+      setTimeout(() => {
+        setIsLiked(false)
+      }, 500);
+    }
+
+  }
+  function submitDislike() {
+    dislikeComment(commentId);
+
+    // Play animation if user dislikes for first time
+    if (globalUser && !comment.dislikes.includes(globalUser.uid)) {
+      setIsDisliked(true);
+
+      setTimeout(() => {
+        setIsDisliked(false)
+      }, 500);
+    }
+  }
 
   function renderReplies(replies) {
 
@@ -32,7 +60,7 @@ export default function CommentCard({ comment, comments }) {
       }
 
       return (
-        <li className="mt-1" key={reply.id}>
+        <li className="my-1" key={reply.id}>
           <CommentCard comment={reply} comments={comments} />
         </li>
       );
@@ -83,12 +111,12 @@ export default function CommentCard({ comment, comments }) {
       <div className="flex gap-3 pt-1">
         <button
           className={`
-            font-light flex gap-1 items-center w-12
-            ${globalUser && comment.likes.includes(globalUser.uid) && `text-blue-700`}
+            font-light flex gap-1 items-center w-12            
+            ${globalUser && comment.likes.includes(globalUser.uid) && `text-blue-700`}            
           `}
-          onClick={() => likeComment(commentId)}
+          onClick={() => submitLike()}
         >
-          <i className="text-lg fa-solid fa-thumbs-up" />
+          <i className={`text-lg fa-solid fa-thumbs-up ${isLiked && `fa-beat`}`} />
           <p>{comment.likes.length}</p>
         </button>
 
@@ -97,9 +125,9 @@ export default function CommentCard({ comment, comments }) {
             font-light flex gap-1 items-center w-12
             ${globalUser && comment.dislikes.includes(globalUser.uid) && `text-red-700`}
           `}
-          onClick={() => dislikeComment(commentId)}
+          onClick={() => submitDislike()}
         >
-          <i className="text-lg fa-solid fa-thumbs-down" />
+          <i className={`text-lg fa-solid fa-thumbs-down ${isDisliked && `fa-beat`}`} />
           <p>{comment.dislikes.length}</p>
         </button>
 
@@ -135,7 +163,9 @@ export default function CommentCard({ comment, comments }) {
             setShowReplies(!showReplies)
             setShowMoreReplies(false);
           }}>
-            <div className="font-semibold text-blue-800 py-1 px-2 rounded-full flex items-center gap-1  mb-2 hover:bg-blue-200">
+            <div
+              className="font-semibold text-blue-800 py-1 px-2 rounded-full flex items-center gap-1 mb-2 hover:bg-blue-200"
+            >
               {showReplies ? (
                 <>
                   <i className="fa-solid fa-angle-up" />
@@ -157,21 +187,20 @@ export default function CommentCard({ comment, comments }) {
         }
       </div>
 
-      {
-        showReplies && (
-          <div className="ml-6">
-            <ul>
-              {renderReplies(comment.replies)}
-            </ul>
+      {showReplies && (
+        <div className="ml-6" >
+          <ul>
+            {renderReplies(comment.replies)}
+          </ul>
 
-            {!showMoreReplies && comment.replies.length > replyLimit && (
-              <button onClick={() => setShowMoreReplies(true)}>
-                <i className="fa-solid fa-angles-down" />
-                Show all replies
-              </button>)
-            }
-          </div>)
-      }
+          {!showMoreReplies && comment.replies.length > replyLimit && (
+            <button onClick={() => setShowMoreReplies(true)}>
+              <i className="fa-solid fa-angles-down" />
+              Show all replies
+            </button>)
+          }
+        </div>
+      )}
     </div >
   );
 }

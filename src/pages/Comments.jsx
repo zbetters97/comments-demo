@@ -76,9 +76,7 @@ export default function Comments() {
         }
       </div>
 
-      <h2 className="text-xl font-bold">
-        {comments.length} Comments
-      </h2>
+      <h2 className="text-xl font-bold">{comments.length} Comments</h2>
 
       <div className="p-4 w-10/12">
         {globalUser && <CommentInput postComment={postComment} />}
