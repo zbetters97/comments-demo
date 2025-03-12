@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../../firebase";
 import { createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query, setDoc, updateDoc, where } from "firebase/firestore";
+import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, increment, onSnapshot, orderBy, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { getTimeSince } from "../utils/date";
 
 const AuthContext = createContext();
@@ -23,6 +23,7 @@ export function AuthProvidor(props) {
   const [globalUser, setGlobalUser] = useState(null);
   const [globalData, setGlobalData] = useState(null);
   const [commentData, setCommentData] = useState([]);
+  const [sortValue, setSortValue] = useState("createdAt");
 
   async function signup(email, password, firstName, lastName, phone, username) {
 
@@ -131,7 +132,9 @@ export function AuthProvidor(props) {
         ...commentInfo,
         createdAt: new Date(),
         likes: [],
+        numLikes: 0,
         dislikes: [],
+        numDislikes: 0,
       }
 
       const commentRef = collection(db, "comments");
@@ -217,7 +220,8 @@ export function AuthProvidor(props) {
         // User already liked comment, remove like
         if (likes.includes(uid)) {
           await updateDoc(commentRef, {
-            likes: arrayRemove(uid)
+            likes: arrayRemove(uid),
+            numLikes: increment(-1)
           });
         }
         else {
@@ -225,13 +229,15 @@ export function AuthProvidor(props) {
           // User disliked comment, remove dislike
           if (dislikes.includes(uid)) {
             await updateDoc(commentRef, {
-              dislikes: arrayRemove(uid)
+              dislikes: arrayRemove(uid),
+              numDislikes: increment(-1)
             })
           }
 
           // Add user ID to likes array
           await updateDoc(commentRef, {
-            likes: arrayUnion(uid)
+            likes: arrayUnion(uid),
+            numLikes: increment(1)
           });
         }
       }
@@ -256,7 +262,8 @@ export function AuthProvidor(props) {
         // User already disliked comment, remove dislike
         if (dislikes.includes(uid)) {
           await updateDoc(commentRef, {
-            dislikes: arrayRemove(uid)
+            dislikes: arrayRemove(uid),
+            numDislikes: increment(-1),
           });
         }
         else {
@@ -264,13 +271,15 @@ export function AuthProvidor(props) {
           // User liked comment, remove like
           if (likes.includes(uid)) {
             await updateDoc(commentRef, {
-              likes: arrayRemove(uid)
+              likes: arrayRemove(uid),
+              numLikes: increment(-1)
             })
           }
 
           // Add user ID to dislikes array
           await updateDoc(commentRef, {
-            dislikes: arrayUnion(uid)
+            dislikes: arrayUnion(uid),
+            numDislikes: increment(1)
           });
         }
       }
@@ -335,52 +344,30 @@ export function AuthProvidor(props) {
 
   useEffect(() => {
 
-    // Update commentData when DB updates
-    return () => onSnapshot(collection(db, "comments"), async (snapshot) => {
+    const unsubscribe = () => onSnapshot(
+      query(collection(db, "comments"), orderBy(sortValue, "desc")),
+      async (comments) => {
 
-      // Track changes to comments
-      snapshot.docChanges().forEach(async (change) => {
-
-        const user = await getUserById(change.doc.data().userId);
-
-        if (!user) {
-          return
-        }
-
-        const comment = {
-          id: change.doc.id,
-          ...change.doc.data(),
-          date: getTimeSince(change.doc.data().createdAt.toDate()),
-          username: user.username
-        };
-
-        setCommentData((prevComments) => {
-
-          const updatedComments = [...prevComments];
-          const index = updatedComments.findIndex((c) => c.id === comment.id);
-
-          if (change.type === "added" || change.type === "modified") {
-            if (index > -1) {
-              updatedComments[index] = comment;
-            } else {
-              updatedComments.push(comment);
-            }
+        const commentInfo = await Promise.all(comments.docs.map(async (comment) => (
+          {
+            id: comment.id,
+            ...comment.data(),
+            date: getTimeSince(comment.data().createdAt.toDate()),
+            username: await getUserById(comment.data().userId).username
           }
-          else if (change.type === "removed") {
-            if (index > -1) {
-              updatedComments.splice(index, 1);
-            }
-          }
+        )));
 
-          return updatedComments;
-        });
-      });
-    });
-  }, []);
+        setCommentData(commentInfo);
+      }
+    );
+
+    return unsubscribe();
+  }, [sortValue]);
+
 
   const dbMethods = {
     globalUser, globalData, signup, usernameAvailable, login, logout, resetPassword,
-    commentData, getReplies, likeComment, dislikeComment, addComment, removeComment,
+    commentData, sortValue, setSortValue, getReplies, likeComment, dislikeComment, addComment, removeComment,
   };
 
   return (

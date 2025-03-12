@@ -8,7 +8,7 @@ import Modal from "../components/Modal"
 
 export default function Comments() {
 
-  const { globalUser, globalData, logout, commentData, addComment } = useAuthContext();
+  const { globalUser, globalData, logout, commentData, sortValue, setSortValue, addComment } = useAuthContext();
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -76,12 +76,41 @@ export default function Comments() {
         }
       </div>
 
-      <h2 className="text-xl font-bold">{comments.length} Comments</h2>
+      <div className="flex flex-col gap-4 ml-2 mb-2">
+        <h2 className="text-xl font-bold">{comments.length} Comments</h2>
+
+        <div>
+          <div className="py-1">
+            <input
+              type="radio"
+              name="sorted"
+              id="radio-date"
+              defaultChecked
+              onClick={() => {
+                setSortValue("createdAt");
+              }}
+            />
+            <label className="p-1" htmlFor="radio-date">Sort by date</label>
+          </div>
+
+          <div className="py-1">
+            <input
+              type="radio"
+              name="sorted"
+              id="radio-likes"
+              onClick={() => {
+                setSortValue("numLikes");
+              }}
+            />
+            <label className="p-1" htmlFor="radio-likes">Sort by Popularity</label>
+          </div>
+        </div>
+      </div>
 
       <div className="p-4 w-10/12">
         {globalUser && <CommentInput postComment={postComment} />}
         <CommentList comments={comments} />
       </div>
-    </div>
+    </div >
   );
 }

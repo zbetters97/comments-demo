@@ -117,7 +117,7 @@ export default function CommentCard({ comment, comments }) {
           onClick={() => submitLike()}
         >
           <i className={`text-lg fa-solid fa-thumbs-up ${isLiked && `fa-beat`}`} />
-          <p>{comment.likes.length}</p>
+          <p>{comment.numLikes}</p>
         </button>
 
         <button
@@ -128,7 +128,7 @@ export default function CommentCard({ comment, comments }) {
           onClick={() => submitDislike()}
         >
           <i className={`text-lg fa-solid fa-thumbs-down ${isDisliked && `fa-beat`}`} />
-          <p>{comment.dislikes.length}</p>
+          <p>{comment.numDislikes}</p>
         </button>
 
 
