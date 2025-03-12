@@ -97,7 +97,7 @@ export default function CommentCard({ comment, comments }) {
     <div className="flex flex-col">
       <div className="text-sm flex gap-2">
         <p className="font-semibold cursor-pointer">
-          @{comment.firstName} {comment.lastName.charAt(0)}
+          @{comment.username}
         </p>
         <p className="font-light">
           {comment.date}

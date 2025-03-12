@@ -30,15 +30,28 @@ function isPasswordValid(password) {
   return password.length >= 8;
 }
 
-export function isSignupValid(email, password, firstName, lastName, phone) {
+function isUsernameValid(username) {
+  return username.length >= 8;
+}
+
+export function isSignupValid(
+  email,
+  password,
+  firstName,
+  lastName,
+  phone,
+  username
+) {
   if (
     !email ||
     !password ||
     !firstName ||
     !lastName ||
     !phone ||
+    !username ||
     !isEmailValid(email) ||
-    !isPasswordValid(password)
+    !isPasswordValid(password) ||
+    !isUsernameValid(username)
   ) {
     console.log("Check input fields!");
     return false;

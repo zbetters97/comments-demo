@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth/cordova";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAo-VBAtheMgJrsos_LL8NRwLb6EvTBfFQ",
-  authDomain: "comments-demo-6ba8f.firebaseapp.com",
-  projectId: "comments-demo-6ba8f",
-  storageBucket: "comments-demo-6ba8f.firebasestorage.app",
-  messagingSenderId: "397218819812",
-  appId: "1:397218819812:web:87d338a6316b705f8106f1",
+  apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTHDOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECTID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGEBUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGINGSENDERID,
+  appId: import.meta.env.VITE_FIREBASE_APPID,
 };
 
 const app = initializeApp(firebaseConfig);

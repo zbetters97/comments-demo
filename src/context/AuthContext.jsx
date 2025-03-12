@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../../firebase";
 import { createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query, setDoc, updateDoc } from "firebase/firestore";
+import { addDoc, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { getTimeSince } from "../utils/date";
 
 const AuthContext = createContext();
@@ -24,7 +24,7 @@ export function AuthProvidor(props) {
   const [globalData, setGlobalData] = useState(null);
   const [commentData, setCommentData] = useState([]);
 
-  async function signup(email, password, firstName, lastName, phone) {
+  async function signup(email, password, firstName, lastName, phone, username) {
 
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -38,10 +38,13 @@ export function AuthProvidor(props) {
         firstName: firstName,
         lastName: lastName,
         phone: phone,
+        username: username
       }
 
       const docRef = doc(db, "users", user.uid);
       await setDoc(docRef, userData);
+
+      return true;
     }
     catch (error) {
       if (error.code === "auth/email-already-in-use") {
@@ -49,12 +52,34 @@ export function AuthProvidor(props) {
       } else {
         console.log(error.message);
       }
+
+      return false;
+    }
+  }
+
+  async function usernameAvailable(username) {
+
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(
+        usersRef,
+        where("username", "==", username)
+      );
+      const querySnapshot = await getDocs(q);
+
+      return querySnapshot.empty;
+    }
+    catch (error) {
+      console.log(error.message);
+      return false;
     }
   }
 
   async function login(email, password) {
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      return true;
     }
     catch (error) {
       if (
@@ -67,6 +92,7 @@ export function AuthProvidor(props) {
       else {
         console.log(error.message);
       }
+      return false;
     }
   }
 
@@ -317,12 +343,15 @@ export function AuthProvidor(props) {
 
         const user = await getUserById(change.doc.data().userId);
 
+        if (!user) {
+          return
+        }
+
         const comment = {
           id: change.doc.id,
           ...change.doc.data(),
           date: getTimeSince(change.doc.data().createdAt.toDate()),
-          firstName: user.firstName,
-          lastName: user.lastName
+          username: user.username
         };
 
         setCommentData((prevComments) => {
@@ -350,7 +379,7 @@ export function AuthProvidor(props) {
   }, []);
 
   const dbMethods = {
-    globalUser, globalData, signup, login, logout, resetPassword,
+    globalUser, globalData, signup, usernameAvailable, login, logout, resetPassword,
     commentData, getReplies, likeComment, dislikeComment, addComment, removeComment,
   };
 

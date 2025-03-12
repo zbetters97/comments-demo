@@ -4,16 +4,26 @@ import { disableNonNumericInput, formatPhoneNumber, isLoginValid, isSignupValid 
 
 export default function Authentication({ onClose }) {
 
-  const { signup, login } = useAuthContext();
+  const { signup, usernameAvailable, login } = useAuthContext();
 
   // Signup or login
   const [isRegistration, setIsRegistration] = useState(false);
 
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
+
+  function resetFields() {
+    setEmail("");
+    setPassword("");
+    setFirstName("");
+    setLastName("");
+    setPhone("");
+    setUsername("");
+  }
 
   async function submitAuthentication(event) {
 
@@ -21,27 +31,32 @@ export default function Authentication({ onClose }) {
 
     try {
       if (isRegistration) {
-        if (!isSignupValid(email, password, firstName, lastName, phone)) {
+
+        if (!isSignupValid(email, password, firstName, lastName, phone, username)) {
           return;
         }
 
-        await signup(email, password, firstName, lastName, phone);
-        setIsRegistration(false);
+        if (!await usernameAvailable(username)) {
+          console.log("Username taken!");
+          return;
+        }
+
+        if (await signup(email, password, firstName, lastName, phone, username)) {
+          setIsRegistration(false);
+          onClose();
+          resetFields();
+        }
       }
       else {
         if (!isLoginValid(email, password)) {
           return;
         }
 
-        await login(email, password);
-        onClose();
+        if (await login(email, password)) {
+          onClose();
+          resetFields();
+        }
       }
-
-      setEmail("");
-      setPassword("");
-      setFirstName("");
-      setLastName("");
-      setPhone("");
     }
     catch (error) {
       console.log(error);
@@ -56,16 +71,16 @@ export default function Authentication({ onClose }) {
       </h2>
 
       <form
-        className="flex flex-col gap-5 [&>div]:flex [&>div]:justify-between [&>div]:gap-4 [&_input]:border-1"
+        className="flex flex-col gap-5 [&_input]:border-1"
         onSubmit={submitAuthentication}
       >
 
         {isRegistration && (
           <>
-            <div>
+            <div className="flex justify-between gap-2">
               <label htmlFor="firstName">First Name</label>
               <input
-                className="border-1 border-black"
+                className="ml-auto"
                 name="firstName"
                 type="text"
                 value={firstName}
@@ -73,9 +88,10 @@ export default function Authentication({ onClose }) {
               />
             </div>
 
-            <div>
+            <div className="flex justify-between gap-2">
               <label htmlFor="lastName">Last Name</label>
               <input
+                className="ml-auto"
                 name="lastName"
                 type="text"
                 value={lastName}
@@ -83,9 +99,21 @@ export default function Authentication({ onClose }) {
               />
             </div>
 
-            <div>
-              <label htmlFor="phone">Phone #</label>
+            <div className="flex justify-between gap-2">
+              <label htmlFor="username">Username</label>
               <input
+                className="ml-auto"
+                name="username"
+                type="text"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-between gap-2">
+              <label htmlFor="phone">Phone Number</label>
+              <input
+                className="ml-auto"
                 name="phone"
                 type="tel"
                 maxLength="16"
@@ -98,9 +126,10 @@ export default function Authentication({ onClose }) {
           </>)
         }
 
-        <div>
+        <div className="flex justify-between gap-2">
           <label htmlFor="email">Email Address</label>
           <input
+            className="ml-auto"
             name="email"
             type="text"
             value={email}
@@ -108,9 +137,10 @@ export default function Authentication({ onClose }) {
           />
         </div>
 
-        <div>
+        <div className="flex justify-between gap-2">
           <label htmlFor="password">Password</label>
           <input
+            className="ml-auto"
             name="password"
             type="password"
             value={password}
@@ -128,9 +158,15 @@ export default function Authentication({ onClose }) {
 
       <button
         className="py-1.5 px-3 rounded-full hover:bg-gray-300"
-        onClick={() => { setIsRegistration(!isRegistration) }}
+        onClick={() => {
+          resetFields();
+          setIsRegistration(!isRegistration)
+        }}
       >
-        <p>{isRegistration ? "Sign In" : "Sign Up"}</p>
+        {isRegistration ?
+          <p>Sign in <i className="fa-solid fa-arrow-right" /></p> :
+          <p><i className="fa-solid fa-arrow-left" /> Sign up</p>
+        }
       </button>
     </div>
   );
