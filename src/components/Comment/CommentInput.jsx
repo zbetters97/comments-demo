@@ -42,5 +42,5 @@ function CommentInput({ isReplying, postComment }) {
   );
 }
 
-// Wraps with Memo to only re-render if props are different
+// Wraps with memo to only re-render if props are different
 export default memo(CommentInput);

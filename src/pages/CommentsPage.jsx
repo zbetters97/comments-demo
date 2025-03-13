@@ -1,12 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Modal from "../components/Modal"
 import Authentication from "../components/Authentication";
-import CommentList from "../components/Comment/CommentList";
+import Sorter from "../components/Comment/Sorter";
+import Comments from "../components/Comment/Comments";
 import CommentInput from "../components/Comment/CommentInput";
 import "../styles/pages/css/Comments.css";
-import Modal from "../components/Modal"
 
-export default function Comments() {
+export default function CommentsPage() {
 
   const { globalUser, globalData, logout, commentData, addComment } = useAuthContext();
 
@@ -44,23 +46,25 @@ export default function Comments() {
       return;
     }
 
-    const replyInfo = {
+    const comment = {
       content: content,
       userId: globalUser.uid,
       replyingTo: "",
       replies: []
     }
 
-    await addComment(replyInfo);
+    await addComment(comment);
   }, [globalUser]);
 
   return (
     <div className="w-screen p-4">
+
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
         <Authentication onClose={() => setOpenModal(false)} />
       </Modal>
 
       <div className="w-1/1 p-4 m-auto flex justify-between align-center">
+
         {globalData && globalUser ? (
           <>
             <h1 className="text-lg">
@@ -87,40 +91,17 @@ export default function Comments() {
       <div className="flex flex-col gap-4 ml-2 mb-2">
         <h2 className="text-xl font-bold">{comments.length} Comments</h2>
 
-        <div className="relative w-fit">
-          <button
-            className="flex items-center gap-1 cursor-pointer"
-            onClick={() => { setShowSort(!showSort); }}
-          >
-            <i className="fa-solid fa-sort"></i>
-            <p>Sort by</p>
-          </button>
-
-
-          <div className={`absolute left-0 right-0 w-fit bg-white shadow-lg rounded-lg overflow-hidden
-          transition-all duration-300 ease-in-out
-            ${showSort ? "max-h-screen p-2" : "max-h-0"}
-            `}>
-            <button
-              className="rounded-sm py-1 px-3 transition-all hover:bg-gray-300"
-              onClick={() => { setSortValue("createdAt"); setShowSort(false); }}
-            >
-              Newest
-            </button>
-            <button
-              className="rounded-sm py-1 px-3 transition-all hover:bg-gray-300"
-              onClick={() => { setSortValue("numLikes"); setShowSort(false); }}
-            >
-              Best
-            </button>
-          </div>
-        </div>
+        {comments.length > 0 &&
+          <Sorter showSort={showSort} setShowSort={setShowSort} setSortValue={setSortValue} />
+        }
       </div>
 
       <div className="p-4 w-10/12">
         {globalUser && <CommentInput postComment={postComment} />}
-        <CommentList comments={comments} />
+        <Comments comments={comments} />
       </div>
+
+      {comments.length === 0 && <p className="text-2xl m-auto text-center">No comments yet!</p>}
     </div >
   );
 }

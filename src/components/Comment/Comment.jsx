@@ -1,8 +1,10 @@
 import { useCallback, useState } from "react";
 import { useAuthContext } from "../../context/AuthContext";
 import CommentInput from "./CommentInput";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faThumbsUp, faThumbsDown, faAngleUp, faAngleDown, faAnglesDown } from '@fortawesome/free-solid-svg-icons';
 
-export default function CommentCard({ comment, comments }) {
+export default function Comment({ comment, comments }) {
 
   const commentId = comment.id;
   const replyLimit = 5;
@@ -61,7 +63,7 @@ export default function CommentCard({ comment, comments }) {
 
       return (
         <li className="my-1" key={reply.id}>
-          <CommentCard comment={reply} comments={comments} />
+          <Comment comment={reply} comments={comments} />
         </li>
       );
     });
@@ -116,7 +118,10 @@ export default function CommentCard({ comment, comments }) {
           `}
           onClick={() => submitLike()}
         >
-          <i className={`text-lg fa-solid fa-thumbs-up ${isLiked && `fa-beat`}`} />
+          <FontAwesomeIcon
+            icon={faThumbsUp}
+            className={`text-lg ${isLiked && `fa-beat`}`}
+          />
           <p>{comment.numLikes}</p>
         </button>
 
@@ -127,10 +132,12 @@ export default function CommentCard({ comment, comments }) {
           `}
           onClick={() => submitDislike()}
         >
-          <i className={`text-lg fa-solid fa-thumbs-down ${isDisliked && `fa-beat`}`} />
+          <FontAwesomeIcon
+            icon={faThumbsDown}
+            className={`text-lg ${isDisliked && `fa-beat`}`}
+          />
           <p>{comment.numDislikes}</p>
         </button>
-
 
         {globalUser && (
           <div className="flex gap-1">
@@ -144,7 +151,11 @@ export default function CommentCard({ comment, comments }) {
             {globalUser.uid === comment.userId && (
               <button
                 className="py-1.5 px-3 rounded-full hover:bg-gray-300"
-                onClick={async () => await removeComment(commentId)}
+                onClick={async () => {
+                  if (window.confirm('Are you sure you want to delete this comment?')) {
+                    await removeComment(commentId);
+                  }
+                }}
               >
                 Delete
               </button>)
@@ -153,8 +164,9 @@ export default function CommentCard({ comment, comments }) {
         }
       </div>
 
-      {globalUser && isReplying && (
-        <CommentInput postComment={submitReply} isReplying={setIsReplying} />)
+      {
+        globalUser && isReplying && (
+          <CommentInput postComment={submitReply} isReplying={setIsReplying} />)
       }
 
       <div>
@@ -168,14 +180,14 @@ export default function CommentCard({ comment, comments }) {
             >
               {showReplies ? (
                 <>
-                  <i className="fa-solid fa-angle-up" />
+                  <FontAwesomeIcon icon={faAngleUp} />
                   {(comment.replies.length == 1 ?
                     "1 reply" :
                     comment.replies.length + " replies"
                   )}
                 </>) : (
                 <>
-                  <i className="fa-solid fa-angle-down" />
+                  <FontAwesomeIcon icon={faAngleDown} />
                   {(comment.replies.length == 1 ?
                     "1 reply" :
                     comment.replies.length + " replies"
@@ -195,12 +207,13 @@ export default function CommentCard({ comment, comments }) {
 
           {!showMoreReplies && comment.replies.length > replyLimit && (
             <button onClick={() => setShowMoreReplies(true)}>
-              <i className="fa-solid fa-angles-down" />
+              <FontAwesomeIcon icon={faAnglesDown} />
               Show all replies
             </button>)
           }
         </div>
-      )}
+      )
+      }
     </div >
   );
 }

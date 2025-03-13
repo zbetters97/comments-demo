@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import { disableNonNumericInput, formatPhoneNumber, isLoginValid, isSignupValid } from "../utils/form";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowRight, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 export default function Authentication({ onClose }) {
 
@@ -8,29 +10,27 @@ export default function Authentication({ onClose }) {
 
   // Signup or login
   const [isRegistration, setIsRegistration] = useState(false);
+  const formRef = useRef(null);
 
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
+  useEffect(() => {
+    if (onClose) {
+      setIsRegistration(false);
+      formRef.current.reset();
+    }
+  }, [onClose]);
 
-  function resetFields() {
-    setEmail("");
-    setPassword("");
-    setFirstName("");
-    setLastName("");
-    setPhone("");
-    setUsername("");
-  }
+  async function formAction(formData) {
 
-  async function submitAuthentication(event) {
-
-    event.preventDefault();
+    const email = formData.get("email");
+    const password = formData.get("password");
 
     try {
       if (isRegistration) {
+
+        const firstName = formData.get("firstName");
+        const lastName = formData.get("lastName");
+        const phone = formData.get("phone");
+        const username = formData.get("username");
 
         if (!isSignupValid(email, password, firstName, lastName, phone, username)) {
           return;
@@ -44,7 +44,7 @@ export default function Authentication({ onClose }) {
         if (await signup(email, password, firstName, lastName, phone, username)) {
           setIsRegistration(false);
           onClose();
-          resetFields();
+          formRef.current.reset();
         }
       }
       else {
@@ -54,7 +54,7 @@ export default function Authentication({ onClose }) {
 
         if (await login(email, password)) {
           onClose();
-          resetFields();
+          formRef.current.reset();
         }
       }
     }
@@ -72,7 +72,8 @@ export default function Authentication({ onClose }) {
 
       <form
         className="flex flex-col gap-5 [&_input]:border-1"
-        onSubmit={submitAuthentication}
+        ref={formRef}
+        action={formAction}
       >
 
         {isRegistration && (
@@ -83,8 +84,6 @@ export default function Authentication({ onClose }) {
                 className="ml-auto"
                 name="firstName"
                 type="text"
-                value={firstName}
-                onChange={(event) => setFirstName(event.target.value)}
               />
             </div>
 
@@ -94,8 +93,6 @@ export default function Authentication({ onClose }) {
                 className="ml-auto"
                 name="lastName"
                 type="text"
-                value={lastName}
-                onChange={(event) => setLastName(event.target.value)}
               />
             </div>
 
@@ -105,8 +102,6 @@ export default function Authentication({ onClose }) {
                 className="ml-auto"
                 name="username"
                 type="text"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
               />
             </div>
 
@@ -117,8 +112,6 @@ export default function Authentication({ onClose }) {
                 name="phone"
                 type="tel"
                 maxLength="16"
-                value={phone}
-                onChange={(event) => setPhone(event.target.value)}
                 onKeyDown={disableNonNumericInput}
                 onKeyUp={formatPhoneNumber}
               />
@@ -132,8 +125,6 @@ export default function Authentication({ onClose }) {
             className="ml-auto"
             name="email"
             type="text"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
           />
         </div>
 
@@ -143,8 +134,6 @@ export default function Authentication({ onClose }) {
             className="ml-auto"
             name="password"
             type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
           />
         </div>
 
@@ -159,13 +148,19 @@ export default function Authentication({ onClose }) {
       <button
         className="py-1.5 px-3 rounded-full hover:bg-gray-300"
         onClick={() => {
-          resetFields();
-          setIsRegistration(!isRegistration)
+          formRef.current.reset();
+          setIsRegistration(!isRegistration);
         }}
       >
         {isRegistration ?
-          <p>Sign in <i className="fa-solid fa-arrow-right" /></p> :
-          <p><i className="fa-solid fa-arrow-left" /> Sign up</p>
+          <p className="flex items-center gap-1">
+            Sign in
+            <FontAwesomeIcon icon={faArrowRight} />
+          </p> :
+          <p className="flex items-center gap-1">
+            <FontAwesomeIcon icon={faArrowLeft} />
+            Sign up
+          </p>
         }
       </button>
     </div>

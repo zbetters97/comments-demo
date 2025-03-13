@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import CommentCard from "./CommentCard";
+import Comment from "./Comment";
 
-export default function CommentList({ comments }) {
+export default function Comments({ comments }) {
 
   // Freeze topComments until comments data changes
   const topComments = useMemo(
@@ -18,7 +18,7 @@ export default function CommentList({ comments }) {
         return (
           <ul key={comment.id}>
             <li>
-              <CommentCard comment={comment} comments={comments} />
+              <Comment comment={comment} comments={comments} />
             </li>
           </ul>
         );
