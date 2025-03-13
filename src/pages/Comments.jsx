@@ -8,23 +8,31 @@ import Modal from "../components/Modal"
 
 export default function Comments() {
 
-  const { globalUser, globalData, logout, commentData, sortValue, setSortValue, addComment } = useAuthContext();
+  const { globalUser, globalData, logout, commentData, addComment } = useAuthContext();
 
   const [openModal, setOpenModal] = useState(false);
+  const [showSort, setShowSort] = useState(false);
+  const [sortValue, setSortValue] = useState("createdAt");
 
-  // Freezes comments variable until commentData changes
+  // Freezes comments variable until commentData or sortValue changes
   const comments = useMemo(
     () => {
       if (!commentData || commentData.length === 0) {
         return [];
       }
 
-      return commentData.map((comment) => ({
+      const comments = commentData.map((comment) => ({
         id: comment.id,
         ...comment
       }));
+
+      const sortedComments = comments.sort((a, b) => {
+        return b[sortValue] - a[sortValue] || b.createdDate - a.createdDate;
+      });
+
+      return sortedComments;
     },
-    [commentData]
+    [commentData, sortValue]
   );
 
   // Memoizes function to prevent re-render of CommentInput (when globalUser loads)
@@ -79,30 +87,32 @@ export default function Comments() {
       <div className="flex flex-col gap-4 ml-2 mb-2">
         <h2 className="text-xl font-bold">{comments.length} Comments</h2>
 
-        <div>
-          <div className="py-1">
-            <input
-              type="radio"
-              name="sorted"
-              id="radio-date"
-              defaultChecked
-              onClick={() => {
-                setSortValue("createdAt");
-              }}
-            />
-            <label className="p-1" htmlFor="radio-date">Sort by date</label>
-          </div>
+        <div className="relative w-fit">
+          <button
+            className="flex items-center gap-1 cursor-pointer"
+            onClick={() => { setShowSort(!showSort); }}
+          >
+            <i className="fa-solid fa-sort"></i>
+            <p>Sort by</p>
+          </button>
 
-          <div className="py-1">
-            <input
-              type="radio"
-              name="sorted"
-              id="radio-likes"
-              onClick={() => {
-                setSortValue("numLikes");
-              }}
-            />
-            <label className="p-1" htmlFor="radio-likes">Sort by Popularity</label>
+
+          <div className={`absolute left-0 right-0 w-fit bg-white shadow-lg rounded-lg overflow-hidden
+          transition-all duration-300 ease-in-out
+            ${showSort ? "max-h-screen p-2" : "max-h-0"}
+            `}>
+            <button
+              className="rounded-sm py-1 px-3 transition-all hover:bg-gray-300"
+              onClick={() => { setSortValue("createdAt"); setShowSort(false); }}
+            >
+              Newest
+            </button>
+            <button
+              className="rounded-sm py-1 px-3 transition-all hover:bg-gray-300"
+              onClick={() => { setSortValue("numLikes"); setShowSort(false); }}
+            >
+              Best
+            </button>
           </div>
         </div>
       </div>

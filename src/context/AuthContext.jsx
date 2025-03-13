@@ -23,7 +23,6 @@ export function AuthProvidor(props) {
   const [globalUser, setGlobalUser] = useState(null);
   const [globalData, setGlobalData] = useState(null);
   const [commentData, setCommentData] = useState([]);
-  const [sortValue, setSortValue] = useState("createdAt");
 
   async function signup(email, password, firstName, lastName, phone, username) {
 
@@ -345,29 +344,53 @@ export function AuthProvidor(props) {
   useEffect(() => {
 
     const unsubscribe = () => onSnapshot(
-      query(collection(db, "comments"), orderBy(sortValue, "desc")),
+      query(collection(db, "comments"), orderBy("createdAt", "desc")),
       async (comments) => {
 
-        const commentInfo = await Promise.all(comments.docs.map(async (comment) => (
-          {
-            id: comment.id,
-            ...comment.data(),
-            date: getTimeSince(comment.data().createdAt.toDate()),
-            username: await getUserById(comment.data().userId).username
-          }
-        )));
+        comments.docChanges().forEach(async (change) => {
 
-        setCommentData(commentInfo);
+          const username = (await getUserById(change.doc.data().userId)).username;
+
+          const comment = {
+            id: change.doc.id,
+            ...change.doc.data(),
+            date: getTimeSince(change.doc.data().createdAt.toDate()),
+            username
+          }
+
+          setCommentData((prevData) => {
+
+            const updatedComments = [...prevData];
+            const index = updatedComments.findIndex((c) => c.id === comment.id);
+
+            if (change.type === "added") {
+              if (index === -1) {
+                updatedComments.push(comment);
+              }
+            }
+            else if (change.type === "modified") {
+              if (index > -1) {
+                updatedComments[index] = comment;
+              }
+            }
+            else if (change.type === "removed") {
+              if (index > -1) {
+                updatedComments.splice(index, 1);
+              }
+            }
+
+            return updatedComments;
+          });
+        })
       }
     );
 
     return unsubscribe();
-  }, [sortValue]);
-
+  }, []);
 
   const dbMethods = {
     globalUser, globalData, signup, usernameAvailable, login, logout, resetPassword,
-    commentData, sortValue, setSortValue, getReplies, likeComment, dislikeComment, addComment, removeComment,
+    commentData, getReplies, likeComment, dislikeComment, addComment, removeComment,
   };
 
   return (
