@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Modal from "../components/Modal"
 import Authentication from "../components/Authentication";
 import Sorter from "../components/Comment/Sorter";
@@ -10,32 +9,25 @@ import "../styles/pages/css/Comments.css";
 
 export default function CommentsPage() {
 
-  const { globalUser, globalData, logout, commentData, addComment } = useAuthContext();
+  const { globalUser, globalData, logout, getComments, addComment } = useAuthContext();
 
   const [openModal, setOpenModal] = useState(false);
-  const [showSort, setShowSort] = useState(false);
-  const [sortValue, setSortValue] = useState("createdAt");
+  const [comments, setComments] = useState([]);
 
-  // Freezes comments variable until commentData or sortValue changes
-  const comments = useMemo(
-    () => {
-      if (!commentData || commentData.length === 0) {
-        return [];
+  useEffect(() => {
+
+    const fetchData = async () => {
+      const comments = await getComments();
+
+      if (!comments || comments.length === 0) {
+        return;
       }
 
-      const comments = commentData.map((comment) => ({
-        id: comment.id,
-        ...comment
-      }));
+      setComments([...comments.sort((a, b) => b.createdAt - a.createdAt)]);
+    }
 
-      const sortedComments = comments.sort((a, b) => {
-        return b[sortValue] - a[sortValue] || b.createdDate - a.createdDate;
-      });
-
-      return sortedComments;
-    },
-    [commentData, sortValue]
-  );
+    fetchData();
+  }, []);
 
   // Memoizes function to prevent re-render of CommentInput (when globalUser loads)
   const postComment = useCallback(async (event, content) => {
@@ -49,12 +41,23 @@ export default function CommentsPage() {
     const comment = {
       content: content,
       userId: globalUser.uid,
+      likes: [],
+      dislikes: [],
       replyingTo: "",
       replies: []
     }
 
-    await addComment(comment);
-  }, [globalUser]);
+    const newComment = await addComment(comment);
+
+    setComments(prevData => [
+      {
+        id: newComment.id,
+        ...newComment.data(),
+        username: globalData.username
+      },
+      ...prevData,
+    ]);
+  }, [globalUser, globalData]);
 
   return (
     <div className="w-screen p-4">
@@ -92,13 +95,13 @@ export default function CommentsPage() {
         <h2 className="text-xl font-bold">{comments.length} Comments</h2>
 
         {comments.length > 0 &&
-          <Sorter showSort={showSort} setShowSort={setShowSort} setSortValue={setSortValue} />
+          <Sorter comments={comments} setComments={setComments} />
         }
       </div>
 
       <div className="p-4 w-10/12">
         {globalUser && <CommentInput postComment={postComment} />}
-        <Comments comments={comments} />
+        <Comments comments={comments} setComments={setComments} />
       </div>
 
       {comments.length === 0 && <p className="text-2xl m-auto text-center">No comments yet!</p>}
