@@ -4,19 +4,16 @@ import CommentsPage from "./pages/CommentsPage";
 import ErrorPage from "./pages/ErrorPage";
 
 export default function App() {
-
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <CommentsPage />
+      element: <CommentsPage />,
     },
     {
       path: "*",
-      element: <ErrorPage />
-    }
+      element: <ErrorPage />,
+    },
   ]);
 
-  return (
-    <RouterProvider router={router} />
-  );
+  return <RouterProvider router={router} />;
 }

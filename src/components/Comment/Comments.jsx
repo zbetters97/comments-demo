@@ -2,13 +2,11 @@ import { useMemo } from "react";
 import Comment from "./Comment";
 
 export default function Comments({ comments, setComments }) {
-
   // Freeze topComments until comments data changes
   const topComments = useMemo(
-
     // Only show non-reply comments
     () => comments.filter((comment) => comment.replyingTo === "") || null,
-    [comments]
+    [comments],
   );
 
   return (
@@ -18,7 +16,11 @@ export default function Comments({ comments, setComments }) {
         return (
           <ul key={comment.id}>
             <li>
-              <Comment comment={comment} comments={comments} setComments={setComments} />
+              <Comment
+                comment={comment}
+                comments={comments}
+                setComments={setComments}
+              />
             </li>
           </ul>
         );

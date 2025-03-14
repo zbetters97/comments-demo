@@ -40,7 +40,7 @@ export function isSignupValid(
   firstName,
   lastName,
   phone,
-  username
+  username,
 ) {
   if (
     !email ||
