@@ -1,6 +1,8 @@
 import Comment from "../Comment/Comment";
 
-export default function ReplyList({ replies, comments, setComments }) {
+export default function ReplyList(props) {
+  const { replies, comments, setComments } = props;
+
   if (!replies?.length) return null;
 
   return (

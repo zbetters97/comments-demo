@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
+import { db } from "../../firebase";
+import { auth } from "../../firebase";
 import { useAuth } from "../hooks/useAuth";
 import { useComments } from "../hooks/useComments";
-import { db } from "../../firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import AuthContext from "./AuthContext";
 
@@ -19,6 +19,7 @@ export function AuthProvider({ children }) {
     resetPassword,
     getUserById,
   } = useAuth();
+
   const {
     getComments,
     addComment,

@@ -7,10 +7,11 @@ export default function App() {
     {
       path: "/",
       element: <CommentsPage />,
+      errorElement: <ErrorPage />,
     },
     {
       path: "*",
-      element: <ErrorPage />,
+      element: <CommentsPage />,
     },
   ]);
 

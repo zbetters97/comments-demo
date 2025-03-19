@@ -2,7 +2,6 @@ import { useCallback, useState } from "react";
 import { useAuthContext } from "../../context/AuthContext";
 import CommentInput from "./CommentInput";
 import CommentCard from "./CommentCard";
-import ReplyList from "../Reply/ReplyList";
 import Replies from "../Reply/Replies";
 
 export default function Comment({ comment, comments, setComments }) {
@@ -66,19 +65,24 @@ export default function Comment({ comment, comments, setComments }) {
     // Update parent comment if this is a reply
     if (comment.replyingTo) {
       setComments((prevComments) =>
-        prevComments.map((c) =>
-          c.id === comment.replyingTo
-            ? {
-              ...c,
-              replies: c.replies.filter((reply) => reply !== comment.id),
-            }
-            : c,
+        prevComments.map(
+          (c) =>
+            // If comment is the parent
+            c.id === comment.replyingTo
+              ? {
+                  // Create new object with same data but reply ID filtered out
+                  ...c,
+                  replies: c.replies.filter((reply) => reply !== comment.id),
+                }
+              : c, // Return unchanged
         ),
       );
     }
 
-    // Fetch updated comments from Firestore and update state
+    // Fetch updated comments from Firestore
     const commentsData = await getComments();
+
+    // Filter out any comment from useState not found in Firestore data
     setComments((prevComments) =>
       prevComments.filter((c) => commentsData.some((data) => data.id === c.id)),
     );
@@ -103,6 +107,7 @@ export default function Comment({ comment, comments, setComments }) {
       const newReply = await addComment(reply, comment.id);
       comment.replies.push(newReply.id);
 
+      // Add reply to useState comments
       setComments((prevData) => [
         ...prevData,
         {

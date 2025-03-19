@@ -8,6 +8,7 @@ import {
 } from "../utils/form";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import InputField from "./InputField";
 
 export default function Authentication({ onClose }) {
   const { signup, usernameAvailable, login } = useAuthContext();
@@ -18,52 +19,63 @@ export default function Authentication({ onClose }) {
 
   useEffect(() => {
     if (onClose) {
-      setIsRegistration(false);
-      formRef.current.reset();
+      resetForm();
     }
   }, [onClose]);
 
-  async function formAction(formData) {
+  function resetForm() {
+    setIsRegistration(false);
+    formRef.current?.reset();
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    const formData = new FormData(formRef.current);
     const email = formData.get("email");
     const password = formData.get("password");
 
     try {
       if (isRegistration) {
-        const firstName = formData.get("firstName");
-        const lastName = formData.get("lastName");
-        const phone = formData.get("phone");
-        const username = formData.get("username");
-
-        if (
-          !isSignupValid(email, password, firstName, lastName, phone, username)
-        ) {
-          return;
-        }
-
-        if (!(await usernameAvailable(username))) {
-          console.log("Username taken!");
-          return;
-        }
-
-        if (
-          await signup(email, password, firstName, lastName, phone, username)
-        ) {
-          setIsRegistration(false);
-          onClose();
-          formRef.current.reset();
-        }
+        await handleSignup(formData, email, password);
       } else {
-        if (!isLoginValid(email, password)) {
-          return;
-        }
-
-        if (await login(email, password)) {
-          onClose();
-          formRef.current.reset();
-        }
+        await handleLogin(email, password);
       }
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  async function handleSignup(formData, email, password) {
+    const firstName = formData.get("firstName");
+    const lastName = formData.get("lastName");
+    const phone = formData.get("phone");
+    const username = formData.get("username");
+
+    if (isSignupValid(email, password, firstName, lastName, phone)) {
+      console.log("Invalid signup information! Please review.");
+      return;
+    }
+    if (!(await usernameAvailable(username))) {
+      console.log("Username taken!");
+      return;
+    }
+
+    if (await signup(email, password, firstName, lastName, phone, username)) {
+      resetForm();
+      onClose();
+    }
+  }
+
+  async function handleLogin(email, password) {
+    if (!isLoginValid(email, password)) {
+      console.log("Invalid login credentials!");
+      return;
+    }
+
+    if (await login(email, password)) {
+      resetForm();
+      onClose();
     }
   }
 
@@ -76,48 +88,26 @@ export default function Authentication({ onClose }) {
       <form
         className="flex flex-col gap-5 [&_input]:border-1"
         ref={formRef}
-        action={formAction}
+        onSubmit={handleSubmit}
       >
         {isRegistration && (
           <>
-            <div className="flex justify-between gap-2">
-              <label htmlFor="firstName">First Name</label>
-              <input className="ml-auto" name="firstName" type="text" />
-            </div>
-
-            <div className="flex justify-between gap-2">
-              <label htmlFor="lastName">Last Name</label>
-              <input className="ml-auto" name="lastName" type="text" />
-            </div>
-
-            <div className="flex justify-between gap-2">
-              <label htmlFor="username">Username</label>
-              <input className="ml-auto" name="username" type="text" />
-            </div>
-
-            <div className="flex justify-between gap-2">
-              <label htmlFor="phone">Phone Number</label>
-              <input
-                className="ml-auto"
-                name="phone"
-                type="tel"
-                maxLength="16"
-                onKeyDown={disableNonNumericInput}
-                onKeyUp={formatPhoneNumber}
-              />
-            </div>
+            <InputField label="First Name" name="firstName" type="text" />
+            <InputField label="Last Name" name="lastName" type="text" />
+            <InputField label="Username" name="username" type="text" />
+            <InputField
+              label="Phone Number"
+              name="phone"
+              type="tel"
+              maxLength="16"
+              onKeyDown={disableNonNumericInput}
+              onKeyUp={formatPhoneNumber}
+            />
           </>
         )}
 
-        <div className="flex justify-between gap-2">
-          <label htmlFor="email">Email Address</label>
-          <input className="ml-auto" name="email" type="text" />
-        </div>
-
-        <div className="flex justify-between gap-2">
-          <label htmlFor="password">Password</label>
-          <input className="ml-auto" name="password" type="password" />
-        </div>
+        <InputField label="Email Address" name="email" type="text" />
+        <InputField label="Password" name="password" type="password" />
 
         <button
           className="m-auto self-start rounded-full bg-gray-900 px-3 py-1.5 text-white"
@@ -129,10 +119,7 @@ export default function Authentication({ onClose }) {
 
       <button
         className="rounded-full px-3 py-1.5 hover:bg-gray-300"
-        onClick={() => {
-          formRef.current.reset();
-          setIsRegistration(!isRegistration);
-        }}
+        onClick={resetForm}
       >
         {isRegistration ? (
           <p className="flex items-center gap-1">
