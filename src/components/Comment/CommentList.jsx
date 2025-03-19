@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import Comment from "./Comment";
 
-export default function Comments({ comments, setComments }) {
+export default function CommentList({ comments, setComments }) {
   // Freeze topComments until comments data changes
   const topComments = useMemo(
     // Only show non-reply comments

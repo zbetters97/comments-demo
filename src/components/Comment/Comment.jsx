@@ -1,27 +1,17 @@
 import { useCallback, useState } from "react";
 import { useAuthContext } from "../../context/AuthContext";
 import CommentInput from "./CommentInput";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faThumbsUp,
-  faThumbsDown,
-  faAngleUp,
-  faAngleDown,
-  faAnglesDown,
-  faAnglesUp,
-} from "@fortawesome/free-solid-svg-icons";
-import { getTimeSince } from "../../utils/date";
+import CommentCard from "./CommentCard";
+import ReplyList from "../Reply/ReplyList";
+import Replies from "../Reply/Replies";
 
 export default function Comment({ comment, comments, setComments }) {
-  const commentId = comment.id;
-  const replyLimit = 5;
-
   const {
     globalUser,
     globalData,
+    getComments,
     likeComment,
     dislikeComment,
-    getComments,
     addComment,
     removeComment,
   } = useAuthContext();
@@ -32,162 +22,87 @@ export default function Comment({ comment, comments, setComments }) {
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
 
-  async function submitLike() {
-    if (globalUser) {
-      // Find comment in existing array
-      const existingComment = comments.find(
-        (comment) => comment.id === commentId,
-      );
+  async function handleLike() {
+    if (!globalUser) return;
 
-      // Play animation if user dislikes for first time
-      if (!existingComment.likes.includes(globalUser.uid)) {
-        setIsLiked(true);
-        setTimeout(() => {
-          setIsLiked(false);
-        }, 500);
-      }
-
-      // Get new data from liked comment
-      const likedComment = await likeComment(commentId);
-
-      // Merge new data into existing comment
-      Object.assign(existingComment, likedComment);
-
-      // Update useState with new comment data
-      setComments(
-        comments.map((comment) =>
-          comment.id === commentId ? existingComment : comment,
-        ),
-      );
+    if (!comment.likes.includes(globalUser.uid)) {
+      setIsLiked(true);
+      setTimeout(() => setIsLiked(false), 500);
     }
+
+    const updatedComment = await likeComment(comment.id, globalUser.uid);
+    updateCommentState(updatedComment);
   }
-  async function submitDislike() {
-    if (globalUser) {
-      // Find comment in existing array
-      const existingComment = comments.find(
-        (comment) => comment.id === commentId,
-      );
 
-      // Play animation if user dislikes for first time
-      if (!existingComment.dislikes.includes(globalUser.uid)) {
-        setIsDisliked(true);
-        setTimeout(() => {
-          setIsDisliked(false);
-        }, 500);
-      }
+  async function handleDislike() {
+    if (!globalUser) return;
 
-      // Get new data from liked comment
-      const dislikedComment = await dislikeComment(commentId);
-
-      // Merge new data into existing comment
-      Object.assign(existingComment, dislikedComment);
-
-      // Update useState with new comment data
-      setComments(
-        comments.map((comment) =>
-          comment.id === commentId ? existingComment : comment,
-        ),
-      );
+    if (!comment.dislikes.includes(globalUser.uid)) {
+      setIsDisliked(true);
+      setTimeout(() => setIsDisliked(false), 500);
     }
+
+    const updatedComment = await dislikeComment(comment.id, globalUser.uid);
+    updateCommentState(updatedComment);
   }
-  async function deleteComment(commentId) {
-    // Find comment to delete from useState
-    const deletedComment = comments.find((comment) => comment.id === commentId);
 
-    // Remove comment from Firestore
-    await removeComment(commentId);
+  function updateCommentState(updatedComment) {
+    Object.assign(comment, updatedComment);
 
-    // Comment was a reply
-    if (deletedComment.replyingTo) {
-      // Find parent comment and remove reply ID
-      const parentComment = comments.find(
-        (comment) => comment.id === deletedComment.replyingTo,
-      );
-      parentComment.replies = parentComment.replies.filter(
-        (reply) => reply !== commentId,
-      );
-
-      // Update useState with new comment data
-      setComments(
-        comments.map((comment) =>
-          comment.id === deletedComment.replyingTo ? parentComment : comment,
-        ),
-      );
-    }
-
-    // Retrieve updated comment data from Firestore
-    const commentsData = await getComments();
-
-    // Compare existing comments with Firestore data and delete extras
-    const updatedComments = comments.filter((comment) =>
-      commentsData.some((data) => data.id === comment.id),
+    setComments(
+      comments.map((comment) =>
+        comment.id === updatedComment.id ? updatedComment : comment,
+      ),
     );
-
-    // Update useState comment data
-    setComments(updatedComments);
   }
 
-  function renderReplies(replies) {
-    if (!replies || replies.length === 0) {
-      return null;
+  async function handleDelete() {
+    if (!window.confirm("Are you sure you want to delete this comment?")) {
+      return;
     }
 
-    if (replies.length > replyLimit && !showMoreReplies) {
-      replies = replies.slice(0, replyLimit);
-    }
+    await removeComment(comment.id);
 
-    return replies.map((replyId) => {
-      const reply = comments.find((c) => c.id === replyId);
-
-      if (!reply) {
-        return null;
-      }
-
-      return (
-        <li className="my-1" key={reply.id}>
-          <Comment
-            comment={reply}
-            comments={comments}
-            setComments={setComments}
-          />
-        </li>
+    // Update parent comment if this is a reply
+    if (comment.replyingTo) {
+      setComments((prevComments) =>
+        prevComments.map((c) =>
+          c.id === comment.replyingTo
+            ? {
+              ...c,
+              replies: c.replies.filter((reply) => reply !== comment.id),
+            }
+            : c,
+        ),
       );
-    });
+    }
+
+    // Fetch updated comments from Firestore and update state
+    const commentsData = await getComments();
+    setComments((prevComments) =>
+      prevComments.filter((c) => commentsData.some((data) => data.id === c.id)),
+    );
   }
 
-  // Memoizes function to prevent re-render of CommentInput unless comments change
-  const submitReply = useCallback(
+  // Memoizes function to prevent re-render of CommentInput
+  const handleReplySubmit = useCallback(
     async (event, content) => {
       event.preventDefault();
 
-      if (!content || !globalUser) {
-        return;
-      }
+      if (!content || !globalUser) return;
 
       const reply = {
-        content: content,
+        content,
         userId: globalUser.uid,
         likes: [],
         dislikes: [],
-        replyingTo: commentId,
+        replyingTo: comment.id,
         replies: [],
       };
 
-      // Get generated ID from Firestore
-      const newReply = await addComment(reply, commentId);
+      const newReply = await addComment(reply, comment.id);
+      comment.replies.push(newReply.id);
 
-      // Find parent comment and add ID to replies array
-      const repliedComment = comments.find(
-        (comment) => comment.id === commentId,
-      );
-      repliedComment.replies.push(newReply.id);
-
-      // Update useState with new comment data
-      setComments(
-        comments.map((comment) =>
-          comment.id === commentId ? repliedComment : comment,
-        ),
-      );
       setComments((prevData) => [
         ...prevData,
         {
@@ -199,134 +114,40 @@ export default function Comment({ comment, comments, setComments }) {
 
       setIsReplying(false);
       setShowReplies(true);
-
-      if (repliedComment.replies.length > replyLimit) {
-        setShowMoreReplies(true);
-      }
     },
-    [comments],
+    [comment.id, globalUser, globalData],
   );
 
   return (
-    <div className="flex flex-col">
-      <div className="flex gap-2 text-sm">
-        <p className="cursor-pointer font-semibold">@{comment.username}</p>
-        <p className="font-light">{getTimeSince(comment.createdAt.toDate())}</p>
-      </div>
+    <div className="py-1">
+      <CommentCard
+        comment={comment}
+        isLiked={isLiked}
+        handleLike={handleLike}
+        isDisliked={isDisliked}
+        handleDislike={handleDislike}
+        isReplying={isReplying}
+        setIsReplying={setIsReplying}
+        handleDelete={handleDelete}
+      />
 
-      <p className="text-xl">{comment.content}</p>
-
-      <div className="flex gap-3 pt-1">
-        <button
-          className={`flex w-12 items-center gap-1 font-light ${globalUser && comment.likes.includes(globalUser.uid) && `text-blue-700`} `}
-          onClick={() => submitLike()}
-        >
-          <FontAwesomeIcon
-            icon={faThumbsUp}
-            className={`text-lg ${isLiked && `fa-beat`}`}
-          />
-          <p>{comment.likes.length}</p>
-        </button>
-
-        <button
-          className={`flex w-12 items-center gap-1 font-light ${globalUser && comment.dislikes.includes(globalUser.uid) && `text-red-700`} `}
-          onClick={() => submitDislike()}
-        >
-          <FontAwesomeIcon
-            icon={faThumbsDown}
-            className={`text-lg ${isDisliked && `fa-beat`}`}
-          />
-          <p>{comment.dislikes.length}</p>
-        </button>
-
-        {globalUser && (
-          <div className="flex gap-1">
-            <button
-              className="rounded-full px-3 py-1.5 hover:bg-gray-300"
-              onClick={() => setIsReplying(!isReplying)}
-            >
-              <p>Reply</p>
-            </button>
-
-            {globalUser.uid === comment.userId && (
-              <button
-                className="rounded-full px-3 py-1.5 hover:bg-gray-300"
-                onClick={async () => {
-                  if (
-                    window.confirm(
-                      "Are you sure you want to delete this comment?",
-                    )
-                  ) {
-                    await deleteComment(commentId);
-                  }
-                }}
-              >
-                Delete
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {globalUser && isReplying && (
-        <CommentInput postComment={submitReply} isReplying={setIsReplying} />
+      {isReplying && globalUser && (
+        <CommentInput
+          postComment={handleReplySubmit}
+          isReplying={setIsReplying}
+        />
       )}
 
-      <div>
-        {comment.replies && comment.replies.length > 0 && (
-          <button
-            onClick={() => {
-              setShowReplies(!showReplies);
-              setShowMoreReplies(false);
-            }}
-          >
-            <div className="mb-2 flex items-center gap-1 rounded-full px-2 py-1 font-semibold text-blue-800 hover:bg-blue-200">
-              {showReplies ? (
-                <>
-                  <FontAwesomeIcon icon={faAngleUp} />
-                  {comment.replies.length == 1
-                    ? "1 reply"
-                    : comment.replies.length + " replies"}
-                </>
-              ) : (
-                <>
-                  <FontAwesomeIcon icon={faAngleDown} />
-                  {comment.replies.length == 1
-                    ? "1 reply"
-                    : comment.replies.length + " replies"}
-                </>
-              )}
-            </div>
-          </button>
-        )}
-      </div>
-
-      {showReplies && (
-        <div className="ml-6">
-          <ul>{renderReplies(comment.replies)}</ul>
-
-          {comment.replies.length > replyLimit && (
-            <>
-              {showMoreReplies ? (
-                <button
-                  className="mb-2 flex items-center gap-1 rounded-full px-2 py-1 font-semibold text-blue-800 hover:bg-blue-200"
-                  onClick={() => setShowMoreReplies(false)}
-                >
-                  <FontAwesomeIcon icon={faAnglesUp} />
-                  Show less replies
-                </button>
-              ) : (
-                <button
-                  className="mb-2 flex items-center gap-1 rounded-full px-2 py-1 font-semibold text-blue-800 hover:bg-blue-200"
-                  onClick={() => setShowMoreReplies(true)}
-                >
-                  <FontAwesomeIcon icon={faAnglesDown} />
-                  Show all replies
-                </button>
-              )}
-            </>
-          )}
-        </div>
+      {comment.replies && comment.replies.length > 0 && (
+        <Replies
+          comment={comment}
+          comments={comments}
+          setComments={setComments}
+          showReplies={showReplies}
+          setShowReplies={setShowReplies}
+          showMoreReplies={showMoreReplies}
+          setShowMoreReplies={setShowMoreReplies}
+        />
       )}
     </div>
   );

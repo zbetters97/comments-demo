@@ -1,5 +1,4 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { useAuthContext } from "./context/AuthContext";
 import CommentsPage from "./pages/CommentsPage";
 import ErrorPage from "./pages/ErrorPage";
 

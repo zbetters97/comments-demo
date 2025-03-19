@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { useAuthContext } from "../context/AuthContext";
 import Modal from "../components/Modal";
 import Authentication from "../components/Authentication";
 import Sorter from "../components/Comment/Sorter";
-import Comments from "../components/Comment/Comments";
+import CommentList from "../components/Comment/CommentList";
 import CommentInput from "../components/Comment/CommentInput";
-import "../styles/pages/css/Comments.css";
+import { useAuthContext } from "../context/AuthContext";
 
 export default function CommentsPage() {
   const { globalUser, globalData, logout, getComments, addComment } =
@@ -99,7 +98,7 @@ export default function CommentsPage() {
 
       <div className="w-10/12 p-4">
         {globalUser && <CommentInput postComment={postComment} />}
-        <Comments comments={comments} setComments={setComments} />
+        <CommentList comments={comments} setComments={setComments} />
       </div>
 
       {comments.length === 0 && (
