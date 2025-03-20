@@ -1,4 +1,4 @@
-import { useCommentsContext } from "../../context/CommentsContext";
+import { useCommentsContext } from "../../context/Comments/CommentsContext";
 
 export default function DeleteButton({ comment }) {
   const { setComments, getComments, removeComment } = useCommentsContext();

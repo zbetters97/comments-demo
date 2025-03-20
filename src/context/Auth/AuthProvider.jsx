@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { db } from "../../firebase";
-import { auth } from "../../firebase";
-import { useAuth } from "../hooks/useAuth";
+import { db } from "../../config/firebase";
+import { auth } from "../../config/firebase";
+import { useAuth } from "../../hooks/useAuth";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import AuthContext from "./AuthContext";

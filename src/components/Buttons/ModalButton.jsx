@@ -1,4 +1,4 @@
-import { useAuthContext } from "../../context/AuthContext";
+import { useAuthContext } from "../../context/Auth/AuthContext";
 import Modal from "../Modal";
 import Authentication from "../Authentication";
 

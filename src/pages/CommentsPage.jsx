@@ -1,5 +1,5 @@
-import { useAuthContext } from "../context/AuthContext";
-import { useCommentsContext } from "../context/CommentsContext";
+import { useAuthContext } from "../context/Auth/AuthContext";
+import { useCommentsContext } from "../context/Comments/CommentsContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import ModalButton from "../components/Buttons/ModalButton";

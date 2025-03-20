@@ -1,4 +1,4 @@
-import { useAuthContext } from "../../context/AuthContext";
+import { useAuthContext } from "../../context/Auth/AuthContext";
 import { useState } from "react";
 import { getTimeSince } from "../../utils/date";
 import VoteButton from "../Buttons/VoteButton";

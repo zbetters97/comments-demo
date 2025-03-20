@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useComments } from "../hooks/useComments";
+import { useComments } from "../../hooks/useComments";
 import CommentsContext from "./CommentsContext";
 
 export function CommentsProvider({ children }) {

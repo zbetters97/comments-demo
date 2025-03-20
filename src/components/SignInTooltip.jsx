@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext } from "../context/Auth/AuthContext";
 
 export default function SignInTooltip({ isVisible, onClose }) {
   const { setIsModalOpen } = useAuthContext();

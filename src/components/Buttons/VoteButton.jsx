@@ -1,5 +1,5 @@
-import { useAuthContext } from "../../context/AuthContext";
-import { useCommentsContext } from "../../context/CommentsContext";
+import { useAuthContext } from "../../context/Auth/AuthContext";
+import { useCommentsContext } from "../../context/Comments/CommentsContext";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import SignInTooltip from "../SignInTooltip";

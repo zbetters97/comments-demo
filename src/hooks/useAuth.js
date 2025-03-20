@@ -1,5 +1,5 @@
-import { db } from "../../firebase";
-import { auth } from "../../firebase";
+import { db } from "../config/firebase";
+import { auth } from "../config/firebase";
 import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,

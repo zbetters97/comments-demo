@@ -1,7 +1,7 @@
 export default function Modal({ isModalOpen, onClose, children }) {
   return (
     <div
-      className={`fixed inset-0 transition-colors ${isModalOpen ? "visible bg-black/80" : "invisible"}`}
+      className={`fixed inset-0 z-50 transition-colors ${isModalOpen ? "visible bg-black/80" : "invisible"}`}
       onClick={onClose}
     >
       <div

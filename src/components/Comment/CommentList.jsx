@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useCommentsContext } from "../../context/CommentsContext";
+import { useCommentsContext } from "../../context/Comments/CommentsContext";
 import Comment from "./Comment";
 
 export default function CommentList() {

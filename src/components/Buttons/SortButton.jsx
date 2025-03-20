@@ -1,4 +1,4 @@
-import { useCommentsContext } from "../../context/CommentsContext";
+import { useCommentsContext } from "../../context/Comments/CommentsContext";
 import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSort } from "@fortawesome/free-solid-svg-icons";
