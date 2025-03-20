@@ -1,8 +1,10 @@
+import { useAuthContext } from "../../context/AuthContext";
+import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSort } from "@fortawesome/free-solid-svg-icons";
-import { useState, useEffect, useRef } from "react";
 
-export default function Sorter({ comments, setComments }) {
+export default function Sorter() {
+  const { comments, setComments } = useAuthContext();
   const [showSort, setShowSort] = useState(false);
   const sorterRef = useRef(null);
 

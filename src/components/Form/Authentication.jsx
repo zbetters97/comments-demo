@@ -1,19 +1,17 @@
+import { useAuthContext } from "../../context/AuthContext";
 import { useEffect, useRef, useState } from "react";
-import { useAuthContext } from "../context/AuthContext";
 import {
   disableNonNumericInput,
   formatPhoneNumber,
   isLoginValid,
   isSignupValid,
-} from "../utils/form";
+} from "../../utils/form";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import InputField from "./InputField";
 
 export default function Authentication({ onClose }) {
   const { signup, usernameAvailable, login } = useAuthContext();
-
-  // Signup or login
   const [isRegistration, setIsRegistration] = useState(false);
   const formRef = useRef(null);
 

@@ -1,7 +1,8 @@
+import { useAuthContext } from "../../context/AuthContext";
 import Comment from "../Comment/Comment";
 
-export default function ReplyList(props) {
-  const { replies, comments, setComments } = props;
+export default function RepliesList({ replies }) {
+  const { comments } = useAuthContext();
 
   if (!replies?.length) return null;
 
@@ -11,13 +12,9 @@ export default function ReplyList(props) {
         const reply = comments.find((c) => c.id === replyId);
         return (
           reply && (
-            <li key={reply.id}>
-              <Comment
-                comment={reply}
-                comments={comments}
-                setComments={setComments}
-              />
-            </li>
+            <div key={reply.id}>
+              <Comment comment={reply} />
+            </div>
           )
         );
       })}

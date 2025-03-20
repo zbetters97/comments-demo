@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-export default function ToggleButton(props) {
-  const { isOpen, onClick, iconOpen, iconClose, labelOpen, labelClose } = props;
+export default function RepliesButton(props) {
+  const { onClick, isOpen, iconOpen, iconClose, labelOpen, labelClose } = props;
 
   return (
     <button

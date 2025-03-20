@@ -1,17 +1,53 @@
+import { useAuthContext } from "../../context/AuthContext";
 import { memo, useRef } from "react";
 
-function CommentInput({ isReplying, postComment }) {
+function CommentInput({ comment, isReplying, setIsReplying }) {
+  const { globalUser, globalData, setComments, addComment } = useAuthContext();
   const inputComment = useRef(null);
 
-  function submit(event) {
-    postComment(event, inputComment.current.value);
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    const content = inputComment.current?.value.trim();
+    if (!content || !globalUser) return;
+
+    const commentId = comment?.id || "";
+    const commentInfo = {
+      content,
+      userId: globalUser.uid,
+      likes: [],
+      dislikes: [],
+      replyingTo: commentId,
+      replies: [],
+    };
+
+    const newComment = await addComment(commentInfo, commentId);
+    if (comment) comment.replies.push(newComment.id);
+
+    setComments((prevData) => [
+      {
+        id: newComment.id,
+        ...newComment.data(),
+        username: globalData.username,
+      },
+      ...prevData,
+    ]);
+
+    closeComment();
+  }
+
+  function closeComment() {
     inputComment.current.value = "";
+
+    if (isReplying) {
+      setIsReplying(false);
+    }
   }
 
   return (
     <form
       className={`flex flex-wrap gap-1 ${isReplying && "pt-2 pl-4"}`}
-      onSubmit={(event) => submit(event)}
+      onSubmit={handleSubmit}
     >
       <input
         className="basis-full border-1 border-transparent border-b-gray-400 focus:border-b-1 focus:border-b-black focus:outline-none"
@@ -29,10 +65,7 @@ function CommentInput({ isReplying, postComment }) {
 
         <button
           className="rounded-full px-3 py-1.5 hover:bg-gray-300"
-          onClick={() => {
-            inputComment.current.value = "";
-            isReplying && isReplying(false);
-          }}
+          onClick={closeComment}
         >
           Cancel
         </button>

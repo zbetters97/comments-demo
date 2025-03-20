@@ -1,8 +1,11 @@
+import { useAuthContext } from "../../context/AuthContext";
 import { useMemo } from "react";
 import Comment from "./Comment";
 
-export default function CommentList({ comments, setComments }) {
-  // Freeze topComments until comments data changes
+export default function CommentList() {
+  const { comments } = useAuthContext();
+
+  // Memoize topComments until comments data changes
   const topComments = useMemo(
     // Only show non-reply comments
     () => comments.filter((comment) => comment.replyingTo === "") || null,
@@ -14,15 +17,9 @@ export default function CommentList({ comments, setComments }) {
       {/* Loop through each comment and create new component*/}
       {topComments.map((comment) => {
         return (
-          <ul key={comment.id}>
-            <li>
-              <Comment
-                comment={comment}
-                comments={comments}
-                setComments={setComments}
-              />
-            </li>
-          </ul>
+          <div key={comment.id}>
+            <Comment comment={comment} />
+          </div>
         );
       })}
     </div>

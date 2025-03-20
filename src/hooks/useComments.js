@@ -45,7 +45,7 @@ export function useComments() {
       const commentRef = collection(db, "comments");
       const commentDoc = await addDoc(commentRef, comment);
 
-      if (replyId) {
+      if (replyId && replyId.length > 0) {
         const parentRef = doc(db, "comments", replyId);
         await updateDoc(parentRef, {
           replies: arrayUnion(commentDoc.id),

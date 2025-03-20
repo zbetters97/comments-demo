@@ -10,6 +10,7 @@ import AuthContext from "./AuthContext";
 export function AuthProvider({ children }) {
   const [globalUser, setGlobalUser] = useState(null);
   const [globalData, setGlobalData] = useState(null);
+  const [comments, setComments] = useState([]);
 
   const {
     signup,
@@ -51,6 +52,31 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
+  // Fetch Firebase comment data and set to useState (first load)
+  useEffect(() => {
+    const fetchData = async () => {
+      const comments = await getComments();
+
+      if (!comments || comments.length === 0) {
+        return;
+      }
+
+      setComments([...comments.sort((a, b) => b.createdAt - a.createdAt)]);
+    };
+
+    fetchData();
+  }, []);
+
+  function updateCommentState(comment, updatedComment) {
+    Object.assign(comment, updatedComment);
+
+    setComments(
+      comments.map((comment) =>
+        comment.id === updatedComment.id ? updatedComment : comment,
+      ),
+    );
+  }
+
   const dbMethods = {
     globalUser,
     globalData,
@@ -60,11 +86,14 @@ export function AuthProvider({ children }) {
     logout,
     resetPassword,
     getUserById,
+    comments,
+    setComments,
+    updateCommentState,
+    getComments,
     addComment,
     removeComment,
     likeComment,
     dislikeComment,
-    getComments,
     getReplies,
   };
 

@@ -1,22 +1,16 @@
+import { useState } from "react";
+import RepliesToggle from "./RepliesToggle";
+import RepliesList from "./RepliesList";
 import {
   faAngleUp,
   faAngleDown,
   faAnglesDown,
   faAnglesUp,
 } from "@fortawesome/free-solid-svg-icons";
-import ReplyList from "./ReplyList";
-import ToggleButton from "../ToggleButton";
 
-export default function Replies(props) {
-  const {
-    comment,
-    comments,
-    setComments,
-    showReplies,
-    setShowReplies,
-    showMoreReplies,
-    setShowMoreReplies,
-  } = props;
+export default function Replies({ comment }) {
+  const [showReplies, setShowReplies] = useState(false);
+  const [showMoreReplies, setShowMoreReplies] = useState(false);
 
   const replyLimit = 5;
 
@@ -35,9 +29,9 @@ export default function Replies(props) {
 
   return (
     <div>
-      <ToggleButton
-        isOpen={showReplies}
+      <RepliesToggle
         onClick={toggleReplies}
+        isOpen={showReplies}
         iconOpen={faAngleUp}
         iconClose={faAngleDown}
         labelOpen={`${comment.replies.length} ${comment.replies.length === 1 ? "reply" : "replies"}`}
@@ -46,16 +40,12 @@ export default function Replies(props) {
 
       {showReplies && (
         <div className="ml-6">
-          <ReplyList
-            replies={repliesToShow}
-            comments={comments}
-            setComments={setComments}
-          />
+          <RepliesList replies={repliesToShow} />
 
           {comment.replies.length > replyLimit && (
-            <ToggleButton
-              isOpen={showMoreReplies}
+            <RepliesToggle
               onClick={toggleMoreReplies}
+              isOpen={showMoreReplies}
               iconOpen={faAnglesUp}
               iconClose={faAnglesDown}
               labelOpen="Show less replies"
