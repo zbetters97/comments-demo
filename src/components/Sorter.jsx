@@ -1,4 +1,4 @@
-import { useAuthContext } from "../../context/AuthContext";
+import { useAuthContext } from "../context/AuthContext";
 import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSort } from "@fortawesome/free-solid-svg-icons";
@@ -71,7 +71,7 @@ export default function Sorter() {
   }, []);
 
   return (
-    <div className="relative w-fit" ref={sorterRef}>
+    <div className="relative z-20 w-fit" ref={sorterRef}>
       <button
         className="flex cursor-pointer items-center gap-1"
         onClick={() => setShowSort(!showSort)}

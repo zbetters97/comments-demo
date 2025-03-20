@@ -1,6 +1,6 @@
 import { useAuthContext } from "../context/AuthContext";
 import ModalButton from "../components/Form/ModalButton";
-import Sorter from "../components/Comment/Sorter";
+import Sorter from "../components/Sorter";
 import CommentInput from "../components/Comment/CommentInput";
 import CommentList from "../components/Comment/CommentList";
 

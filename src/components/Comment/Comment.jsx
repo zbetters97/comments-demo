@@ -6,15 +6,11 @@ import DislikeButton from "./DislikeButton";
 import DeleteButton from "./DeleteButton";
 import CommentInput from "./CommentInput";
 import Replies from "../Replies/Replies";
+import ReplyButton from "./ReplyButton";
 
 export default function Comment({ comment }) {
   const { globalUser } = useAuthContext();
   const [isReplying, setIsReplying] = useState(false);
-
-  function toggleReply() {
-    if (!globalUser) return;
-    setIsReplying(!isReplying);
-  }
 
   return (
     <div className="py-1">
@@ -29,16 +25,10 @@ export default function Comment({ comment }) {
           <p className="text-xl">{comment.content}</p>
         </div>
 
-        <div className="ml-1 flex">
+        <div className="ml-1 flex items-center">
           <LikeButton comment={comment} />
           <DislikeButton comment={comment} />
-
-          <button
-            className="rounded-full px-3 py-1 hover:bg-gray-300"
-            onClick={toggleReply}
-          >
-            Reply
-          </button>
+          <ReplyButton isReplying={isReplying} setIsReplying={setIsReplying} />
 
           {globalUser && globalUser.uid === comment.userId && (
             <DeleteButton comment={comment} />

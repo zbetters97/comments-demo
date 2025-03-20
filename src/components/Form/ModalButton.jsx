@@ -4,8 +4,8 @@ import Modal from "./Modal";
 import Authentication from "./Authentication";
 
 export default function ModalButton() {
-  const { globalUser, globalData, logout } = useAuthContext();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { globalUser, globalData, isModalOpen, setIsModalOpen, logout } =
+    useAuthContext();
 
   return (
     <div>

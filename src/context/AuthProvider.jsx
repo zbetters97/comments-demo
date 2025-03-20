@@ -10,6 +10,7 @@ import AuthContext from "./AuthContext";
 export function AuthProvider({ children }) {
   const [globalUser, setGlobalUser] = useState(null);
   const [globalData, setGlobalData] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [comments, setComments] = useState([]);
 
   const {
@@ -80,6 +81,8 @@ export function AuthProvider({ children }) {
   const dbMethods = {
     globalUser,
     globalData,
+    isModalOpen,
+    setIsModalOpen,
     signup,
     usernameAvailable,
     login,
