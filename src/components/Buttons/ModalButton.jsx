@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { useAuthContext } from "../../context/AuthContext";
-import Modal from "./Modal";
-import Authentication from "./Authentication";
+import Modal from "../Modal";
+import Authentication from "../Authentication";
 
 export default function ModalButton() {
   const { globalUser, globalData, isModalOpen, setIsModalOpen, logout } =

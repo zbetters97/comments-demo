@@ -1,9 +1,9 @@
-import { useAuthContext } from "../../context/AuthContext";
 import { useMemo } from "react";
+import { useCommentsContext } from "../../context/CommentsContext";
 import Comment from "./Comment";
 
 export default function CommentList() {
-  const { comments } = useAuthContext();
+  const { comments } = useCommentsContext();
 
   // Memoize topComments until comments data changes
   const topComments = useMemo(

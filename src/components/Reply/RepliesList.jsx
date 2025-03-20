@@ -1,8 +1,8 @@
-import { useAuthContext } from "../../context/AuthContext";
+import { useCommentsContext } from "../../context/CommentsContext";
 import Comment from "../Comment/Comment";
 
 export default function RepliesList({ replies }) {
-  const { comments } = useAuthContext();
+  const { comments } = useCommentsContext();
 
   if (!replies?.length) return null;
 

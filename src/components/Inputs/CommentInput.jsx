@@ -1,8 +1,10 @@
 import { useAuthContext } from "../../context/AuthContext";
+import { useCommentsContext } from "../../context/CommentsContext";
 import { memo, useRef } from "react";
 
 function CommentInput({ comment, isReplying, setIsReplying }) {
-  const { globalUser, globalData, setComments, addComment } = useAuthContext();
+  const { globalUser, globalData } = useAuthContext();
+  const { setComments, addComment } = useCommentsContext();
   const inputComment = useRef(null);
 
   async function handleSubmit(event) {

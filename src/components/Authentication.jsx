@@ -1,14 +1,14 @@
-import { useAuthContext } from "../../context/AuthContext";
+import { useAuthContext } from "../context/AuthContext";
 import { useEffect, useRef, useState } from "react";
 import {
   disableNonNumericInput,
   formatPhoneNumber,
   isLoginValid,
   isSignupValid,
-} from "../../utils/form";
+} from "../utils/form";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRight, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import InputField from "./InputField";
+import AuthInput from "../components/Inputs/AuthInput";
 
 export default function Authentication({ onClose }) {
   const { signup, usernameAvailable, login } = useAuthContext();
@@ -90,10 +90,10 @@ export default function Authentication({ onClose }) {
       >
         {isRegistration && (
           <>
-            <InputField label="First Name" name="firstName" type="text" />
-            <InputField label="Last Name" name="lastName" type="text" />
-            <InputField label="Username" name="username" type="text" />
-            <InputField
+            <AuthInput label="First Name" name="firstName" type="text" />
+            <AuthInput label="Last Name" name="lastName" type="text" />
+            <AuthInput label="Username" name="username" type="text" />
+            <AuthInput
               label="Phone Number"
               name="phone"
               type="tel"
@@ -104,8 +104,8 @@ export default function Authentication({ onClose }) {
           </>
         )}
 
-        <InputField label="Email Address" name="email" type="text" />
-        <InputField label="Password" name="password" type="password" />
+        <AuthInput label="Email Address" name="email" type="text" />
+        <AuthInput label="Password" name="password" type="password" />
 
         <button
           className="m-auto self-start rounded-full bg-gray-900 px-3 py-1.5 text-white"

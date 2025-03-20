@@ -1,7 +1,7 @@
-import { useAuthContext } from "../../context/AuthContext";
+import { useCommentsContext } from "../../context/CommentsContext";
 
 export default function DeleteButton({ comment }) {
-  const { setComments, getComments, removeComment } = useAuthContext();
+  const { setComments, getComments, removeComment } = useCommentsContext();
 
   async function handleDelete() {
     if (!window.confirm("Are you sure you want to delete this comment?")) {

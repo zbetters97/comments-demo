@@ -1,5 +1,5 @@
 import { useState } from "react";
-import RepliesToggle from "./RepliesToggle";
+import RepliesToggle from "../Buttons/RepliesButton";
 import RepliesList from "./RepliesList";
 import {
   faAngleUp,
@@ -25,6 +25,10 @@ export default function Replies({ comment }) {
 
   function toggleMoreReplies() {
     setShowMoreReplies(!showMoreReplies);
+  }
+
+  if (!comment.replies || comment.replies.length === 0) {
+    return;
   }
 
   return (

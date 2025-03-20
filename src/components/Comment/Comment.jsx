@@ -1,12 +1,12 @@
 import { useAuthContext } from "../../context/AuthContext";
 import { useState } from "react";
 import { getTimeSince } from "../../utils/date";
-import LikeButton from "./LikeButton";
-import DislikeButton from "./DislikeButton";
-import DeleteButton from "./DeleteButton";
-import CommentInput from "./CommentInput";
-import Replies from "../Replies/Replies";
-import ReplyButton from "./ReplyButton";
+import VoteButton from "../Buttons/VoteButton";
+import { faThumbsDown, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
+import ReplyButton from "../Buttons/ReplyButton";
+import DeleteButton from "../Buttons/DeleteButton";
+import CommentInput from "../Inputs/CommentInput";
+import Replies from "../Reply/Replies";
 
 export default function Comment({ comment }) {
   const { globalUser } = useAuthContext();
@@ -14,7 +14,7 @@ export default function Comment({ comment }) {
 
   return (
     <div className="py-1">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         <div className="flex flex-col gap-1">
           <div className="flex gap-2 text-sm">
             <p className="cursor-pointer font-semibold">@{comment.username}</p>
@@ -26,8 +26,19 @@ export default function Comment({ comment }) {
         </div>
 
         <div className="ml-1 flex items-center">
-          <LikeButton comment={comment} />
-          <DislikeButton comment={comment} />
+          <VoteButton
+            comment={comment}
+            type="like"
+            icon={faThumbsUp}
+            color="text-blue-700"
+          />
+          <VoteButton
+            comment={comment}
+            type="dislike"
+            icon={faThumbsDown}
+            color="text-red-700"
+          />
+
           <ReplyButton isReplying={isReplying} setIsReplying={setIsReplying} />
 
           {globalUser && globalUser.uid === comment.userId && (
@@ -44,9 +55,7 @@ export default function Comment({ comment }) {
         />
       )}
 
-      {comment.replies && comment.replies.length > 0 && (
-        <Replies comment={comment} />
-      )}
+      <Replies comment={comment} />
     </div>
   );
 }
